@@ -1,5 +1,6 @@
 const COINGECKO_BASE_URL = '/coingecko-api';
 const GITHUB_BASE_URL = '/github-api';
+import { dataCache } from './dataCache';
 
 // Rate limiting helper
 class RateLimiter {
@@ -87,6 +88,8 @@ export class CryptoDataService {
   }
 
   async getTokenData(tokenIds: string[]): Promise<CoinGeckoToken[]> {
+    const cacheKey = `tokens-${tokenIds.join(',')}`;
+    
     try {
       const idsParam = tokenIds.join(',');
       const url = `${COINGECKO_BASE_URL}/coins/markets?vs_currency=usd&ids=${idsParam}&order=market_cap_desc&per_page=250&page=1&sparkline=false&price_change_percentage=24h,7d,30d`;
@@ -94,25 +97,51 @@ export class CryptoDataService {
       const response = await this.fetchWithRateLimit(url, coinGeckoLimiter);
       const data = await response.json();
       
+      // Cache successful response
+      dataCache.set(cacheKey, data);
+      
       return data;
     } catch (error) {
       console.error('Error fetching token data:', error);
-      // Return fallback data for development
+      
+      // Try to return last known good data
+      const cachedData = dataCache.get<CoinGeckoToken[]>(cacheKey);
+      if (cachedData) {
+        console.warn(`Using cached token data (${Math.round((dataCache.getAge(cacheKey) || 0) / 60000)} minutes old)`);
+        return cachedData;
+      }
+      
+      // Fall back to static data only if no cache available
+      console.warn('No cached data available, using static fallback');
       return this.getFallbackTokenData(tokenIds);
     }
   }
 
   async getGlobalMarketData(): Promise<any> {
+    const cacheKey = 'global-market';
+    
     try {
       const url = `${COINGECKO_BASE_URL}/global`;
       
       const response = await this.fetchWithRateLimit(url, coinGeckoLimiter);
       const data = await response.json();
       
+      // Cache successful response
+      dataCache.set(cacheKey, data);
+      
       return data;
     } catch (error) {
       console.error('Error fetching global market data:', error);
-      // Return fallback data for development
+      
+      // Try to return last known good data
+      const cachedData = dataCache.get<any>(cacheKey);
+      if (cachedData) {
+        console.warn(`Using cached global data (${Math.round((dataCache.getAge(cacheKey) || 0) / 60000)} minutes old)`);
+        return cachedData;
+      }
+      
+      // Fall back to static data only if no cache available
+      console.warn('No cached global data available, using static fallback');
       return this.getFallbackGlobalData();
     }
   }
@@ -194,72 +223,130 @@ export class CryptoDataService {
   }
 
   async getTrendingTokens(): Promise<any> {
+    const cacheKey = 'trending-tokens';
+    
     try {
       const url = `${COINGECKO_BASE_URL}/search/trending`;
       
       const response = await this.fetchWithRateLimit(url, coinGeckoLimiter);
       const data = await response.json();
       
+      // Cache successful response
+      dataCache.set(cacheKey, data);
+      
       return data;
     } catch (error) {
       console.error('Error fetching trending tokens:', error);
-      // Return fallback trending data
-      return {
+      
+      // Try to return last known good data
+      const cachedData = dataCache.get<any>(cacheKey);
+      if (cachedData) {
+        console.warn(`Using cached trending data (${Math.round((dataCache.getAge(cacheKey) || 0) / 60000)} minutes old)`);
+        return cachedData;
+      }
+      
+      // Fall back to static data only if no cache available
+      console.warn('No cached trending data available, using static fallback');
+      const fallbackData = {
         coins: [
           { item: { id: 'render-token', name: 'Render', symbol: 'RNDR', market_cap_rank: 45 } },
           { item: { id: 'fetch-ai', name: 'Fetch.ai', symbol: 'FET', market_cap_rank: 67 } },
           { item: { id: 'chainlink', name: 'Chainlink', symbol: 'LINK', market_cap_rank: 15 } }
         ]
       };
+      return fallbackData;
     }
   }
 
   async searchTokens(query: string): Promise<any> {
+    const cacheKey = `search-${query}`;
+    
     try {
       const url = `${COINGECKO_BASE_URL}/search?query=${encodeURIComponent(query)}`;
       
       const response = await this.fetchWithRateLimit(url, coinGeckoLimiter);
       const data = await response.json();
       
+      // Cache successful response
+      dataCache.set(cacheKey, data, 5 * 60 * 1000); // 5 minute TTL for search
+      
       return data;
     } catch (error) {
       console.error('Error searching tokens:', error);
-      // Return fallback search results
-      return {
+      
+      // Try to return last known good data
+      const cachedData = dataCache.get<any>(cacheKey);
+      if (cachedData) {
+        console.warn(`Using cached search data (${Math.round((dataCache.getAge(cacheKey) || 0) / 60000)} minutes old)`);
+        return cachedData;
+      }
+      
+      // Fall back to static data only if no cache available
+      console.warn('No cached search data available, using static fallback');
+      const fallbackData = {
         coins: [
           { id: 'render-token', name: 'Render', symbol: 'RNDR', market_cap_rank: 45 },
           { id: 'fetch-ai', name: 'Fetch.ai', symbol: 'FET', market_cap_rank: 67 },
           { id: 'chainlink', name: 'Chainlink', symbol: 'LINK', market_cap_rank: 15 }
         ]
       };
+      return fallbackData;
     }
   }
 
   async getTokenDetails(tokenId: string): Promise<any> {
+    const cacheKey = `token-details-${tokenId}`;
+    
     try {
       const url = `${COINGECKO_BASE_URL}/coins/${tokenId}?localization=false&tickers=false&market_data=true&community_data=true&developer_data=true`;
       
       const response = await this.fetchWithRateLimit(url, coinGeckoLimiter);
       const data = await response.json();
       
+      // Cache successful response
+      dataCache.set(cacheKey, data);
+      
       return data;
     } catch (error) {
       console.error('Error fetching token details:', error);
+      
+      // Try to return last known good data
+      const cachedData = dataCache.get<any>(cacheKey);
+      if (cachedData) {
+        console.warn(`Using cached token details (${Math.round((dataCache.getAge(cacheKey) || 0) / 60000)} minutes old)`);
+        return cachedData;
+      }
+      
+      // No fallback for token details - throw error
       throw error;
     }
   }
 
   async getTopTokensByCategory(category: string, limit: number = 50): Promise<CoinGeckoToken[]> {
+    const cacheKey = `category-${category}-${limit}`;
+    
     try {
       const url = `${COINGECKO_BASE_URL}/coins/markets?vs_currency=usd&category=${category}&order=market_cap_desc&per_page=${limit}&page=1&sparkline=false&price_change_percentage=24h,7d,30d`;
       
       const response = await this.fetchWithRateLimit(url, coinGeckoLimiter);
       const data = await response.json();
       
+      // Cache successful response
+      dataCache.set(cacheKey, data);
+      
       return data;
     } catch (error) {
       console.error('Error fetching category tokens:', error);
-      // Return fallback data for development
+      
+      // Try to return last known good data
+      const cachedData = dataCache.get<CoinGeckoToken[]>(cacheKey);
+      if (cachedData) {
+        console.warn(`Using cached category data (${Math.round((dataCache.getAge(cacheKey) || 0) / 60000)} minutes old)`);
+        return cachedData;
+      }
+      
+      // Fall back to static data only if no cache available
+      console.warn('No cached category data available, using static fallback');
       return this.getFallbackCategoryTokens(category, limit);
     }
   }
@@ -341,59 +428,115 @@ export class CryptoDataService {
   }
 
   async getGitHubRepoData(owner: string, repo: string): Promise<GitHubRepo> {
+    const cacheKey = `github-repo-${owner}-${repo}`;
+    
     try {
       const url = `${GITHUB_BASE_URL}/repos/${owner}/${repo}`;
       
       const response = await this.fetchWithRateLimit(url, githubLimiter);
       const data = await response.json();
       
+      // Cache successful response
+      dataCache.set(cacheKey, data, 60 * 60 * 1000); // 1 hour TTL for GitHub data
+      
       return data;
     } catch (error) {
       console.error('Error fetching GitHub repo data:', error);
+      
+      // Try to return last known good data
+      const cachedData = dataCache.get<GitHubRepo>(cacheKey);
+      if (cachedData) {
+        console.warn(`Using cached GitHub repo data (${Math.round((dataCache.getAge(cacheKey) || 0) / 60000)} minutes old)`);
+        return cachedData;
+      }
+      
+      // No fallback for GitHub data - throw error
       throw error;
     }
   }
 
   async getGitHubCommitActivity(owner: string, repo: string): Promise<GitHubCommitActivity[]> {
+    const cacheKey = `github-commits-${owner}-${repo}`;
+    
     try {
       const url = `${GITHUB_BASE_URL}/repos/${owner}/${repo}/stats/commit_activity`;
       
       const response = await this.fetchWithRateLimit(url, githubLimiter);
       const data = await response.json();
       
+      // Cache successful response
+      dataCache.set(cacheKey, data || [], 60 * 60 * 1000); // 1 hour TTL
+      
       return data || [];
     } catch (error) {
       console.error('Error fetching GitHub commit activity:', error);
-      throw error;
+      
+      // Try to return last known good data
+      const cachedData = dataCache.get<GitHubCommitActivity[]>(cacheKey);
+      if (cachedData) {
+        console.warn(`Using cached GitHub commit data (${Math.round((dataCache.getAge(cacheKey) || 0) / 60000)} minutes old)`);
+        return cachedData;
+      }
+      
+      // Return empty array if no cache
+      return [];
     }
   }
 
   async getGitHubContributors(owner: string, repo: string): Promise<any[]> {
+    const cacheKey = `github-contributors-${owner}-${repo}`;
+    
     try {
       const url = `${GITHUB_BASE_URL}/repos/${owner}/${repo}/contributors?per_page=100`;
       
       const response = await this.fetchWithRateLimit(url, githubLimiter);
       const data = await response.json();
       
+      // Cache successful response
+      dataCache.set(cacheKey, data || [], 60 * 60 * 1000); // 1 hour TTL
+      
       return data || [];
     } catch (error) {
       console.error('Error fetching GitHub contributors:', error);
-      throw error;
+      
+      // Try to return last known good data
+      const cachedData = dataCache.get<any[]>(cacheKey);
+      if (cachedData) {
+        console.warn(`Using cached GitHub contributors data (${Math.round((dataCache.getAge(cacheKey) || 0) / 60000)} minutes old)`);
+        return cachedData;
+      }
+      
+      // Return empty array if no cache
+      return [];
     }
   }
 
   // Get exchange data
   async getExchanges(): Promise<any[]> {
+    const cacheKey = 'exchanges';
+    
     try {
       const url = `${COINGECKO_BASE_URL}/exchanges?per_page=100&page=1`;
       
       const response = await this.fetchWithRateLimit(url, coinGeckoLimiter);
       const data = await response.json();
       
+      // Cache successful response
+      dataCache.set(cacheKey, data, 60 * 60 * 1000); // 1 hour TTL
+      
       return data;
     } catch (error) {
       console.error('Error fetching exchanges:', error);
-      throw error;
+      
+      // Try to return last known good data
+      const cachedData = dataCache.get<any[]>(cacheKey);
+      if (cachedData) {
+        console.warn(`Using cached exchanges data (${Math.round((dataCache.getAge(cacheKey) || 0) / 60000)} minutes old)`);
+        return cachedData;
+      }
+      
+      // Return empty array if no cache
+      return [];
     }
   }
 }

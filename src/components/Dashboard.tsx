@@ -140,6 +140,15 @@ export function Dashboard() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              {/* Data freshness indicator */}
+              <div className="text-right">
+                <p className="text-xs text-gray-500">
+                  {(trendingLoading || aiLoading || depinLoading) ? 'Updating...' : 'Live Data'}
+                </p>
+                <div className={cn('w-2 h-2 rounded-full', 
+                  (trendingLoading || aiLoading || depinLoading) ? 'bg-warning-500 animate-pulse' : 'bg-success-500'
+                )} />
+              </div>
               <div className="text-right">
                 <p className="text-sm text-gray-600">Market Overview</p>
                 <p className="font-semibold text-gray-900">{formatNumber(marketStats.totalMarketCap)}</p>
