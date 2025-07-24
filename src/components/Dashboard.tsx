@@ -266,7 +266,7 @@ export function Dashboard() {
                 </div>
                 <div className="p-3 bg-primary-50 rounded-lg">
                   <p className="font-medium text-primary-800">Custody Rule</p>
-                  <p className="text-primary-700">Self-custody if held >1 week</p>
+                  <p className="text-primary-700">Self-custody if held {'>'}1 week</p>
                 </div>
               </div>
             </div>
