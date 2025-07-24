@@ -234,6 +234,91 @@ export class CryptoDataService {
       };
     }
   }
+
+  async getTokenDetails(tokenId: string): Promise<any> {
+    try {
+      const url = `${COINGECKO_BASE_URL}/coins/${tokenId}?localization=false&tickers=false&market_data=true&community_data=true&developer_data=true`;
+      
+      const response = await this.fetchWithRateLimit(url, coinGeckoLimiter);
+      const data = await response.json();
+      
+      return data;
+    } catch (error) {
+      console.error('Error fetching token details:', error);
+      throw error;
+    }
+  }
+
+  async getTopTokensByCategory(category: string, limit: number = 50): Promise<CoinGeckoToken[]> {
+    try {
+      const url = `${COINGECKO_BASE_URL}/coins/markets?vs_currency=usd&category=${category}&order=market_cap_desc&per_page=${limit}&page=1&sparkline=false&price_change_percentage=24h,7d,30d`;
+      
+      const response = await this.fetchWithRateLimit(url, coinGeckoLimiter);
+      const data = await response.json();
+      
+      return data;
+    } catch (error) {
+      console.error('Error fetching category tokens:', error);
+      throw error;
+    }
+  }
+
+  async getGitHubRepoData(owner: string, repo: string): Promise<GitHubRepo> {
+    try {
+      const url = `${GITHUB_BASE_URL}/repos/${owner}/${repo}`;
+      
+      const response = await this.fetchWithRateLimit(url, githubLimiter);
+      const data = await response.json();
+      
+      return data;
+    } catch (error) {
+      console.error('Error fetching GitHub repo data:', error);
+      throw error;
+    }
+  }
+
+  async getGitHubCommitActivity(owner: string, repo: string): Promise<GitHubCommitActivity[]> {
+    try {
+      const url = `${GITHUB_BASE_URL}/repos/${owner}/${repo}/stats/commit_activity`;
+      
+      const response = await this.fetchWithRateLimit(url, githubLimiter);
+      const data = await response.json();
+      
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching GitHub commit activity:', error);
+      throw error;
+    }
+  }
+
+  async getGitHubContributors(owner: string, repo: string): Promise<any[]> {
+    try {
+      const url = `${GITHUB_BASE_URL}/repos/${owner}/${repo}/contributors?per_page=100`;
+      
+      const response = await this.fetchWithRateLimit(url, githubLimiter);
+      const data = await response.json();
+      
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching GitHub contributors:', error);
+      throw error;
+    }
+  }
+
+  // Get exchange data
+  async getExchanges(): Promise<any[]> {
+    try {
+      const url = `${COINGECKO_BASE_URL}/exchanges?per_page=100&page=1`;
+      
+      const response = await this.fetchWithRateLimit(url, coinGeckoLimiter);
+      const data = await response.json();
+      
+      return data;
+    } catch (error) {
+      console.error('Error fetching exchanges:', error);
+      throw error;
+    }
+  }
 }
 
 export const cryptoDataService = new CryptoDataService();
