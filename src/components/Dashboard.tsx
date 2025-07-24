@@ -21,7 +21,7 @@ export function Dashboard() {
     narrativeFilter: '',
     riskLevel: ''
   });
-  const [activeTab, setActiveTab] = useState<'tokens' | 'narratives' | 'analysis'>('tokens');
+  const [activeTab, setActiveTab] = useState<'tokens' | 'narratives' | 'breakout' | 'analysis'>('tokens');
   const [breakoutCandidates, setBreakoutCandidates] = useState<AnalysisResult[]>([]);
 
   // Fetch real data
@@ -30,23 +30,6 @@ export function Dashboard() {
   const { data: depinTokens = [], isLoading: depinLoading } = useTokensByCategory('infrastructure');
   const { data: selectedAnalysis, isLoading: analysisLoading } = useTokenAnalysis(selectedToken || '');
   const { data: globalData } = useGlobalMarketData();
-
-  // Fetch analyses for all tokens to identify breakout candidates
-  const tokenAnalyses = allTokens.slice(0, 20).map(token => 
-    useTokenAnalysis(token.id)
-  );
-
-  // Update breakout candidates when analyses are loaded
-  React.useEffect(() => {
-    const completedAnalyses = tokenAnalyses
-      .map(query => query.data)
-      .filter((analysis): analysis is AnalysisResult => analysis !== null && analysis !== undefined);
-    
-    if (completedAnalyses.length > 0) {
-      const candidates = identifyBreakoutCandidates(allTokens, completedAnalyses);
-      setBreakoutCandidates(candidates);
-    }
-  }, [tokenAnalyses.map(q => q.data).join(',')]);
 
   // Combine all tokens for display
   const allTokens = useMemo(() => {
@@ -57,6 +40,24 @@ export function Dashboard() {
     );
     return unique;
   }, [trendingTokens, aiTokens, depinTokens]);
+
+  // Fetch analyses for breakout detection
+  const tokenAnalysisQueries = allTokens.slice(0, 20).map(token => 
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useTokenAnalysis(token.id)
+  );
+
+  // Update breakout candidates when analyses are loaded
+  React.useEffect(() => {
+    const completedAnalyses = tokenAnalysisQueries
+      .map(query => query.data)
+      .filter((analysis): analysis is AnalysisResult => analysis !== null && analysis !== undefined);
+    
+    if (completedAnalyses.length > 0) {
+      const candidates = identifyBreakoutCandidates(allTokens, completedAnalyses);
+      setBreakoutCandidates(candidates);
+    }
+  }, [tokenAnalysisQueries.map(q => q.data).join(','), allTokens]);
 
   const filteredTokens = useMemo(() => {
     return allTokens.filter(token => {
@@ -281,7 +282,7 @@ export function Dashboard() {
                   ))}
                 </div>
                 
-                {filteredTokens.length === 0 && (
+                {filteredTokens.length === 0 && !trendingLoading && !aiLoading && !depinLoading && (
                   <div className="text-center py-12">
                     <AlertTriangle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No tokens found</h3>
