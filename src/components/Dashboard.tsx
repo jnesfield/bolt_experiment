@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useQueries } from '@tanstack/react-query';
 import { Activity, TrendingUp, Users, Calendar, Target, AlertTriangle } from 'lucide-react';
 import { TokenCard } from './TokenCard';
 import { AnalysisPanel } from './AnalysisPanel';
