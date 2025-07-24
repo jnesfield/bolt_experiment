@@ -4,8 +4,8 @@ import { TokenCard } from './TokenCard';
 import { AnalysisPanel } from './AnalysisPanel';
 import { NarrativeCard } from './NarrativeCard';
 import { SearchBar, SearchFilters } from './SearchBar';
-import { mockTokens, mockNarratives, generateMockAnalysis } from '../data/mockData';
-import { AnalysisResult } from '../types';
+import { useTokenData, useTrendingTokens, useTokensByCategory, useTokenAnalysis, useGlobalMarketData } from '../hooks/useTokenData';
+import { AnalysisResult, Token } from '../types';
 import { formatNumber, cn } from '../utils';
 
 export function Dashboard() {
@@ -21,8 +21,25 @@ export function Dashboard() {
   });
   const [activeTab, setActiveTab] = useState<'tokens' | 'narratives' | 'analysis'>('tokens');
 
+  // Fetch real data
+  const { data: trendingTokens = [], isLoading: trendingLoading } = useTrendingTokens();
+  const { data: aiTokens = [], isLoading: aiLoading } = useTokensByCategory('artificial-intelligence');
+  const { data: depinTokens = [], isLoading: depinLoading } = useTokensByCategory('infrastructure');
+  const { data: selectedAnalysis, isLoading: analysisLoading } = useTokenAnalysis(selectedToken || '');
+  const { data: globalData } = useGlobalMarketData();
+
+  // Combine all tokens for display
+  const allTokens = useMemo(() => {
+    const combined = [...trendingTokens, ...aiTokens, ...depinTokens];
+    // Remove duplicates by id
+    const unique = combined.filter((token, index, self) => 
+      index === self.findIndex(t => t.id === token.id)
+    );
+    return unique;
+  }, [trendingTokens, aiTokens, depinTokens]);
+
   const filteredTokens = useMemo(() => {
-    return mockTokens.filter(token => {
+    return allTokens.filter(token => {
       const matchesSearch = token.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            token.symbol.toLowerCase().includes(searchQuery.toLowerCase());
       
@@ -31,25 +48,55 @@ export function Dashboard() {
       
       return matchesSearch && matchesMarketCap && matchesVolume;
     });
-  }, [searchQuery, filters]);
-
-  const selectedAnalysis: AnalysisResult | null = useMemo(() => {
-    if (!selectedToken) return null;
-    return generateMockAnalysis(selectedToken);
-  }, [selectedToken]);
+  }, [allTokens, searchQuery, filters]);
 
   const marketStats = useMemo(() => {
-    const totalMarketCap = mockTokens.reduce((sum, token) => sum + token.marketCap, 0);
-    const totalVolume = mockTokens.reduce((sum, token) => sum + token.volume24h, 0);
-    const avgPerformance = mockTokens.reduce((sum, token) => sum + token.priceChange24h, 0) / mockTokens.length;
+    if (globalData?.data) {
+      return {
+        totalMarketCap: globalData.data.total_market_cap?.usd || 0,
+        totalVolume: globalData.data.total_volume?.usd || 0,
+        avgPerformance: globalData.data.market_cap_change_percentage_24h_usd || 0,
+        tokenCount: allTokens.length
+      };
+    }
+    
+    const totalMarketCap = allTokens.reduce((sum, token) => sum + token.marketCap, 0);
+    const totalVolume = allTokens.reduce((sum, token) => sum + token.volume24h, 0);
+    const avgPerformance = allTokens.length > 0 
+      ? allTokens.reduce((sum, token) => sum + token.priceChange24h, 0) / allTokens.length 
+      : 0;
     
     return {
       totalMarketCap,
       totalVolume,
       avgPerformance,
-      tokenCount: mockTokens.length
+      tokenCount: allTokens.length
     };
-  }, []);
+  }, [allTokens, globalData]);
+
+  // Mock narratives for now - would be calculated from real data
+  const mockNarratives = [
+    {
+      id: 'ai-narrative',
+      name: 'AI & Machine Learning',
+      description: 'Tokens powering AI infrastructure, GPU sharing, and autonomous agents',
+      tokens: aiTokens.map(t => t.id),
+      performance30d: aiTokens.length > 0 ? aiTokens.reduce((sum, t) => sum + t.priceChange30d, 0) / aiTokens.length : 0,
+      marketCap: aiTokens.reduce((sum, t) => sum + t.marketCap, 0),
+      trending: true,
+      catalysts: ['ChatGPT adoption', 'GPU shortage', 'AI agent development', 'Enterprise AI adoption']
+    },
+    {
+      id: 'depin-narrative',
+      name: 'DePIN (Decentralized Physical Infrastructure)',
+      description: 'Decentralized networks for physical infrastructure and IoT',
+      tokens: depinTokens.map(t => t.id),
+      performance30d: depinTokens.length > 0 ? depinTokens.reduce((sum, t) => sum + t.priceChange30d, 0) / depinTokens.length : 0,
+      marketCap: depinTokens.reduce((sum, t) => sum + t.marketCap, 0),
+      trending: true,
+      catalysts: ['5G rollout', 'IoT expansion', 'Data storage demand']
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -168,7 +215,21 @@ export function Dashboard() {
           <div className="lg:col-span-2">
             {activeTab === 'tokens' && (
               <div className="space-y-6">
-                <SearchBar onSearch={setSearchQuery} onFilterChange={setFilters} />
+                <SearchBar 
+                  onSearch={setSearchQuery} 
+                  onFilterChange={setFilters}
+                  onTokenSelect={(tokenId) => {
+                    setSelectedToken(tokenId);
+                    setActiveTab('analysis');
+                  }}
+                />
+                
+                {(trendingLoading || aiLoading || depinLoading) && (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
+                    <p className="text-gray-600 mt-2">Loading token data...</p>
+                  </div>
+                )}
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {filteredTokens.map(token => (
@@ -215,8 +276,23 @@ export function Dashboard() {
               </div>
             )}
 
-            {activeTab === 'analysis' && selectedAnalysis && (
-              <AnalysisPanel analysis={selectedAnalysis} />
+            {activeTab === 'analysis' && (
+              <div>
+                {analysisLoading && (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
+                    <p className="text-gray-600 mt-2">Analyzing token data...</p>
+                  </div>
+                )}
+                {selectedAnalysis && <AnalysisPanel analysis={selectedAnalysis} />}
+                {!selectedAnalysis && !analysisLoading && (
+                  <div className="text-center py-12">
+                    <AlertTriangle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No analysis available</h3>
+                    <p className="text-gray-600">Select a token to view detailed analysis.</p>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 

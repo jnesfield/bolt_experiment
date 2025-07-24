@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Search, Filter, TrendingUp } from 'lucide-react';
+import { useTokenSearch } from '../hooks/useTokenData';
 import { cn } from '../utils';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
   onFilterChange: (filters: SearchFilters) => void;
+  onTokenSelect?: (tokenId: string) => void;
 }
 
 export interface SearchFilters {
@@ -15,9 +17,10 @@ export interface SearchFilters {
   riskLevel: string;
 }
 
-export function SearchBar({ onSearch, onFilterChange }: SearchBarProps) {
+export function SearchBar({ onSearch, onFilterChange, onTokenSelect }: SearchBarProps) {
   const [query, setQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [showResults, setShowResults] = useState(false);
   const [filters, setFilters] = useState<SearchFilters>({
     minMarketCap: 0,
     maxMarketCap: 0,
@@ -26,15 +29,25 @@ export function SearchBar({ onSearch, onFilterChange }: SearchBarProps) {
     riskLevel: ''
   });
 
+  const { data: searchResults } = useTokenSearch(query);
+
   const handleSearch = (value: string) => {
     setQuery(value);
     onSearch(value);
+    setShowResults(value.length > 2);
   };
 
   const handleFilterChange = (key: keyof SearchFilters, value: string | number) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
     onFilterChange(newFilters);
+  };
+
+  const handleTokenSelect = (tokenId: string, tokenName: string) => {
+    setQuery(tokenName);
+    setShowResults(false);
+    onTokenSelect?.(tokenId);
+    onSearch(tokenName);
   };
 
   return (
@@ -46,6 +59,7 @@ export function SearchBar({ onSearch, onFilterChange }: SearchBarProps) {
           placeholder="Search tokens by name or symbol..."
           value={query}
           onChange={(e) => handleSearch(e.target.value)}
+          onFocus={() => query.length > 2 && setShowResults(true)}
           className="input pl-10 pr-12 w-full"
         />
         <button
@@ -57,7 +71,34 @@ export function SearchBar({ onSearch, onFilterChange }: SearchBarProps) {
         >
           <Filter className="w-5 h-5" />
         </button>
+        
+        {/* Search Results Dropdown */}
+        {showResults && searchResults?.coins && searchResults.coins.length > 0 && (
+          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+            {searchResults.coins.slice(0, 10).map((coin: any) => (
+              <button
+                key={coin.id}
+                onClick={() => handleTokenSelect(coin.id, coin.name)}
+                className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3 border-b border-gray-100 last:border-b-0"
+              >
+                <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                  {coin.symbol?.slice(0, 2).toUpperCase() || coin.name?.slice(0, 2).toUpperCase()}
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-gray-900">{coin.name}</p>
+                  <p className="text-sm text-gray-500">{coin.symbol?.toUpperCase()}</p>
+                </div>
+                <div className="text-xs text-gray-400">
+                  #{coin.market_cap_rank || 'N/A'}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
+      
+      {/* Click outside to close results */}
+      {showResults && <div className="fixed inset-0 z-40" onClick={() => setShowResults(false)} />}
 
       {showFilters && (
         <div className="card animate-slide-up">
