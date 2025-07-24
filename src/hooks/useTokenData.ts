@@ -9,6 +9,7 @@ import {
   determineRecommendation,
   CRYPTO_GITHUB_REPOS
 } from '../services/dataTransformers';
+import { calculateBreakoutProbability } from '../services/breakoutAnalysis';
 import { Token, AnalysisResult, DeveloperMetrics } from '../types';
 
 export function useTokenData(tokenIds: string[]) {
@@ -110,6 +111,14 @@ export function useTokenAnalysis(tokenId: string) {
       const riskLevel = determineRiskLevel(overallScore, token);
       const recommendation = determineRecommendation(overallScore, riskLevel);
 
+      // Calculate breakout probability
+      const breakoutAnalysis = calculateBreakoutProbability({
+        token,
+        developerMetrics: developerMetrics || undefined,
+        narrative: narrative || undefined,
+        volumeRatio: token.volume24h / token.marketCap
+      });
+
       return {
         token,
         narrative: narrative ? {
@@ -138,7 +147,9 @@ export function useTokenAnalysis(tokenId: string) {
         technical: null, // Would need technical analysis APIs
         overallScore,
         riskLevel,
-        recommendation
+        recommendation,
+        breakoutProbability: breakoutAnalysis.probability,
+        breakoutSignals: breakoutAnalysis.signals
       };
     },
     staleTime: 10 * 60 * 1000, // 10 minutes

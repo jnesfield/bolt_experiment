@@ -3,8 +3,10 @@ import { Activity, TrendingUp, Users, Calendar, Target, AlertTriangle } from 'lu
 import { TokenCard } from './TokenCard';
 import { AnalysisPanel } from './AnalysisPanel';
 import { NarrativeCard } from './NarrativeCard';
+import { BreakoutRadar } from './BreakoutRadar';
 import { SearchBar, SearchFilters } from './SearchBar';
 import { useTokenData, useTrendingTokens, useTokensByCategory, useTokenAnalysis, useGlobalMarketData } from '../hooks/useTokenData';
+import { identifyBreakoutCandidates } from '../services/breakoutAnalysis';
 import { AnalysisResult, Token } from '../types';
 import { formatNumber, cn } from '../utils';
 
@@ -20,6 +22,7 @@ export function Dashboard() {
     riskLevel: ''
   });
   const [activeTab, setActiveTab] = useState<'tokens' | 'narratives' | 'analysis'>('tokens');
+  const [breakoutCandidates, setBreakoutCandidates] = useState<AnalysisResult[]>([]);
 
   // Fetch real data
   const { data: trendingTokens = [], isLoading: trendingLoading } = useTrendingTokens();
@@ -27,6 +30,23 @@ export function Dashboard() {
   const { data: depinTokens = [], isLoading: depinLoading } = useTokensByCategory('infrastructure');
   const { data: selectedAnalysis, isLoading: analysisLoading } = useTokenAnalysis(selectedToken || '');
   const { data: globalData } = useGlobalMarketData();
+
+  // Fetch analyses for all tokens to identify breakout candidates
+  const tokenAnalyses = allTokens.slice(0, 20).map(token => 
+    useTokenAnalysis(token.id)
+  );
+
+  // Update breakout candidates when analyses are loaded
+  React.useEffect(() => {
+    const completedAnalyses = tokenAnalyses
+      .map(query => query.data)
+      .filter((analysis): analysis is AnalysisResult => analysis !== null && analysis !== undefined);
+    
+    if (completedAnalyses.length > 0) {
+      const candidates = identifyBreakoutCandidates(allTokens, completedAnalyses);
+      setBreakoutCandidates(candidates);
+    }
+  }, [tokenAnalyses.map(q => q.data).join(',')]);
 
   // Combine all tokens for display
   const allTokens = useMemo(() => {
@@ -195,6 +215,22 @@ export function Dashboard() {
           >
             Narrative Radar
           </button>
+          <button
+            onClick={() => setActiveTab('breakout')}
+            className={cn(
+              'px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 relative',
+              activeTab === 'breakout' 
+                ? 'bg-white text-primary-600 shadow-sm' 
+                : 'text-gray-600 hover:text-gray-900'
+            )}
+          >
+            Breakout Radar
+            {breakoutCandidates.length > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                {breakoutCandidates.length}
+              </span>
+            )}
+          </button>
           {selectedAnalysis && (
             <button
               onClick={() => setActiveTab('analysis')}
@@ -274,6 +310,16 @@ export function Dashboard() {
                   ))}
                 </div>
               </div>
+            )}
+
+            {activeTab === 'breakout' && (
+              <BreakoutRadar 
+                candidates={breakoutCandidates}
+                onTokenSelect={(tokenId) => {
+                  setSelectedToken(tokenId);
+                  setActiveTab('analysis');
+                }}
+              />
             )}
 
             {activeTab === 'analysis' && (

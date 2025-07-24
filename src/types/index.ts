@@ -104,6 +104,15 @@ export interface AnalysisResult {
   overallScore: number;
   riskLevel: 'low' | 'medium' | 'high';
   recommendation: 'strong_buy' | 'buy' | 'hold' | 'sell' | 'strong_sell';
+  breakoutProbability: number;
+  breakoutSignals: BreakoutSignal[];
+}
+
+export interface BreakoutSignal {
+  type: 'volume' | 'price' | 'development' | 'narrative' | 'smart_money' | 'technical';
+  strength: 'weak' | 'moderate' | 'strong';
+  description: string;
+  weight: number;
 }
 
 export interface WatchlistItem {

@@ -11,7 +11,9 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  Target
+  Target,
+  Zap,
+  Activity
 } from 'lucide-react';
 import { AnalysisResult } from '../types';
 import { formatNumber, formatPercentage, getScoreColor, getScoreBadgeColor, getRiskColor, getRecommendationColor, cn } from '../utils';
@@ -21,7 +23,7 @@ interface AnalysisPanelProps {
 }
 
 export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
-  const { token, narrative, developerMetrics, tokenomics, smartMoney, sentiment, listing, technical, overallScore, riskLevel, recommendation } = analysis;
+  const { token, narrative, developerMetrics, tokenomics, smartMoney, sentiment, listing, technical, overallScore, riskLevel, recommendation, breakoutProbability, breakoutSignals } = analysis;
 
   const ScoreIcon = overallScore >= 70 ? CheckCircle : overallScore >= 40 ? AlertTriangle : XCircle;
 
@@ -52,6 +54,14 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
               </span>
               <span className={cn('badge', getRecommendationColor(recommendation).replace('text-', 'bg-').replace('-600', '-100').replace('-700', '-100') + ' ' + getRecommendationColor(recommendation))}>
                 {recommendation.replace('_', ' ').toUpperCase()}
+              </span>
+              <span className={cn('badge', 
+                breakoutProbability >= 80 ? 'bg-success-100 text-success-800' :
+                breakoutProbability >= 65 ? 'bg-warning-100 text-warning-800' :
+                'bg-primary-100 text-primary-800'
+              )}>
+                <Zap className="w-3 h-3 mr-1" />
+                {breakoutProbability}% BREAKOUT
               </span>
             </div>
           </div>
@@ -381,6 +391,83 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
           </div>
         </div>
       )}
+
+      {/* Breakout Analysis */}
+      <div className="card">
+        <div className="card-header">
+          <div className="flex items-center space-x-2">
+            <Zap className="w-5 h-5 text-primary-600" />
+            <h3 className="text-lg font-semibold">Breakout Analysis</h3>
+          </div>
+          <span className={cn('badge', 
+            breakoutProbability >= 80 ? 'badge-success' :
+            breakoutProbability >= 65 ? 'badge-warning' :
+            'badge-primary'
+          )}>
+            {breakoutProbability}% PROBABILITY
+          </span>
+        </div>
+        <div className="space-y-3">
+          {breakoutSignals.map((signal, index) => {
+            const getSignalIcon = () => {
+              switch (signal.type) {
+                case 'volume': return Activity;
+                case 'price': return TrendingUp;
+                case 'development': return Code;
+                case 'narrative': return MessageSquare;
+                case 'smart_money': return Target;
+                case 'technical': return BarChart3;
+                default: return Activity;
+              }
+            };
+            
+            const SignalIcon = getSignalIcon();
+            
+            return (
+              <div 
+                key={index}
+                className={cn('flex items-center p-3 rounded-lg', 
+                  signal.strength === 'strong' ? 'bg-success-50 border border-success-200' :
+                  signal.strength === 'moderate' ? 'bg-warning-50 border border-warning-200' :
+                  'bg-gray-50 border border-gray-200'
+                )}
+              >
+                <SignalIcon className={cn('w-5 h-5 mr-3', 
+                  signal.strength === 'strong' ? 'text-success-600' :
+                  signal.strength === 'moderate' ? 'text-warning-600' :
+                  'text-gray-600'
+                )} />
+                <div className="flex-1">
+                  <p className={cn('font-medium', 
+                    signal.strength === 'strong' ? 'text-success-800' :
+                    signal.strength === 'moderate' ? 'text-warning-800' :
+                    'text-gray-800'
+                  )}>
+                    {signal.description}
+                  </p>
+                </div>
+                <span className={cn('badge text-xs', 
+                  signal.strength === 'strong' ? 'badge-success' :
+                  signal.strength === 'moderate' ? 'badge-warning' :
+                  'bg-gray-100 text-gray-800'
+                )}>
+                  {signal.strength.toUpperCase()}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+        
+        <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+          <p className="text-sm text-blue-800">
+            <strong>Breakout Interpretation:</strong> {' '}
+            {breakoutProbability >= 80 && "Very high probability - multiple strong signals align for potential breakout"}
+            {breakoutProbability >= 65 && breakoutProbability < 80 && "High probability - several positive indicators suggest breakout potential"}
+            {breakoutProbability >= 50 && breakoutProbability < 65 && "Moderate probability - mixed signals, monitor closely for confirmation"}
+            {breakoutProbability < 50 && "Lower probability - limited breakout signals, consider waiting for better setup"}
+          </p>
+        </div>
+      </div>
 
       {/* Action Items */}
       <div className="card">
