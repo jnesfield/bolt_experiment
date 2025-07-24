@@ -41,23 +41,28 @@ export function Dashboard() {
     return unique;
   }, [trendingTokens, aiTokens, depinTokens]);
 
-  // Fetch analyses for breakout detection
-  const tokenAnalysisQueries = allTokens.slice(0, 20).map(token => 
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    useTokenAnalysis(token.id)
-  );
+  // Fetch analyses for breakout detection using useQueries
+  const tokenAnalysisQueries = useQueries({
+    queries: allTokens.slice(0, 20).map(token => ({
+      queryKey: ['tokenAnalysis', token.id],
+      queryFn: () => performTokenAnalysis(token.id),
+      staleTime: 10 * 60 * 1000, // 10 minutes
+      enabled: !!token.id
+    }))
+  });
 
   // Update breakout candidates when analyses are loaded
   React.useEffect(() => {
     const completedAnalyses = tokenAnalysisQueries
-      .map(query => query.data)
+      .filter(query => query.isFetched && query.data)
+      .map(query => query.data!)
       .filter((analysis): analysis is AnalysisResult => analysis !== null && analysis !== undefined);
     
     if (completedAnalyses.length > 0) {
       const candidates = identifyBreakoutCandidates(allTokens, completedAnalyses);
       setBreakoutCandidates(candidates);
     }
-  }, [tokenAnalysisQueries.map(q => q.data).join(','), allTokens]);
+  }, [tokenAnalysisQueries.map(q => q.isFetched ? q.data?.token.id : '').join(','), allTokens]);
 
   const filteredTokens = useMemo(() => {
     return allTokens.filter(token => {
