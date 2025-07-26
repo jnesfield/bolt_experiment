@@ -253,11 +253,11 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
               <h3 className="text-lg font-semibold">Sentiment Analysis</h3>
             </div>
             <span className={cn('badge', 
-              sentiment.engagementPercentile >= 60 && sentiment.engagementPercentile <= 80 && sentiment.botScore < 10
+              sentiment.engagementPercentile >= 60 && sentiment.engagementPercentile <= 80 && sentiment.botScore < 15
                 ? 'badge-success' 
                 : 'badge-warning'
             )}>
-              {sentiment.engagementPercentile}th PERCENTILE
+              {sentiment.engagementPercentile >= 60 && sentiment.engagementPercentile <= 80 ? 'SWEET SPOT' : `${sentiment.engagementPercentile}th PERCENTILE`}
             </span>
           </div>
           <div className="grid grid-cols-3 gap-4">
@@ -268,7 +268,7 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
             <div className="metric-card">
               <p className="text-xs text-gray-600 mb-1">Bot Score</p>
               <p className={cn('font-semibold text-lg', 
-                sentiment.botScore < 10 ? 'text-success-600' : 'text-danger-600'
+                sentiment.botScore < 15 ? 'text-success-600' : 'text-danger-600'
               )}>
                 {sentiment.botScore}%
               </p>
@@ -282,6 +282,16 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
                 {(sentiment.sentimentScore * 100).toFixed(0)}%
               </p>
             </div>
+          </div>
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+            <p className="text-sm text-blue-800">
+              <strong>Sweet Spot Analysis:</strong> {' '}
+              {sentiment.engagementPercentile >= 60 && sentiment.engagementPercentile <= 80 && sentiment.botScore < 15
+                ? "Perfect engagement range - high interest without excessive hype or bot manipulation"
+                : sentiment.engagementPercentile > 80 
+                ? "High engagement - monitor for excessive hype and potential top signals"
+                : "Low engagement - early stage or lacking momentum"}
+            </p>
           </div>
         </div>
       )}
@@ -483,9 +493,10 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
               <h4 className="font-medium text-success-800 mb-2">Strong Buy Signal</h4>
               <ul className="text-sm text-success-700 space-y-1">
                 <li>• All key metrics align positively</li>
-                <li>• Consider ladder buying in accumulation range</li>
+                <li>• Ladder buy in accumulation range (DCA approach)</li>
                 <li>• Set stop loss below support level</li>
-                <li>• Target 3x risk/reward ratio</li>
+                <li>• Target 3-5x risk/reward ratio</li>
+                <li>• Max 1% of portfolio allocation</li>
               </ul>
             </div>
           )}
@@ -494,9 +505,10 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
               <h4 className="font-medium text-primary-800 mb-2">Buy Signal</h4>
               <ul className="text-sm text-primary-700 space-y-1">
                 <li>• Most metrics are favorable</li>
-                <li>• Consider smaller position size</li>
+                <li>• Start with 0.5% position size</li>
                 <li>• Monitor smart money flows closely</li>
                 <li>• Watch for narrative developments</li>
+                <li>• Set alerts for volume spikes</li>
               </ul>
             </div>
           )}
@@ -508,14 +520,16 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
                 <li>• Wait for clearer confirmation</li>
                 <li>• Monitor unlock schedule</li>
                 <li>• Track developer activity</li>
+                <li>• Watch for narrative catalysts</li>
               </ul>
             </div>
           )}
           <div className="text-xs text-gray-500 mt-4 p-3 bg-gray-50 rounded-lg">
             <p className="font-medium mb-1">Risk Management:</p>
-            <p>• Never risk more than 1% of portfolio on micro-caps</p>
+            <p>• Never risk more than 1% of portfolio per micro-cap</p>
             <p>• Use proper position sizing and stop losses</p>
             <p>• Self-custody tokens held longer than 1 week</p>
+            <p>• Focus on 60-80th percentile engagement sweet spot</p>
           </div>
         </div>
       </div>

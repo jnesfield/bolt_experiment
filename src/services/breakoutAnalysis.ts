@@ -23,27 +23,27 @@ export function calculateBreakoutProbability(input: BreakoutAnalysisInput): {
 
   // Volume Analysis (25% weight)
   const volumeRatio = input.token.volume24h / input.token.marketCap;
-  if (volumeRatio > 0.15) {
+  if (volumeRatio > 0.10) { // Lowered threshold for micro-caps
     signals.push({
       type: 'volume',
       strength: 'strong',
-      description: `Exceptional volume: ${(volumeRatio * 100).toFixed(1)}% of market cap`,
+      description: `Exceptional volume: ${(volumeRatio * 100).toFixed(1)}% of market cap (breakout signal)`,
       weight: 25
     });
     weightedScore += 25 * 0.9;
-  } else if (volumeRatio > 0.08) {
+  } else if (volumeRatio > 0.05) {
     signals.push({
       type: 'volume',
       strength: 'moderate',
-      description: `High volume: ${(volumeRatio * 100).toFixed(1)}% of market cap`,
+      description: `High volume: ${(volumeRatio * 100).toFixed(1)}% of market cap (accumulation)`,
       weight: 25
     });
     weightedScore += 25 * 0.6;
-  } else if (volumeRatio > 0.03) {
+  } else if (volumeRatio > 0.02) {
     signals.push({
       type: 'volume',
       strength: 'weak',
-      description: `Moderate volume: ${(volumeRatio * 100).toFixed(1)}% of market cap`,
+      description: `Moderate volume: ${(volumeRatio * 100).toFixed(1)}% of market cap (watching)`,
       weight: 25
     });
     weightedScore += 25 * 0.3;
@@ -147,19 +147,19 @@ export function calculateBreakoutProbability(input: BreakoutAnalysisInput): {
 
   // Market Cap Tier Bonus (10% weight)
   const marketCapTier = getMarketCapTier(input.token.marketCap);
-  if (marketCapTier === 'micro' && input.token.volume24h > 500000) {
+  if (marketCapTier === 'micro' && volumeRatio > 0.05) {
     signals.push({
       type: 'technical',
       strength: 'strong',
-      description: `Micro-cap with volume: ${formatMarketCap(input.token.marketCap)} market cap`,
+      description: `Micro-cap breakout setup: ${formatMarketCap(input.token.marketCap)} with ${(volumeRatio * 100).toFixed(1)}% volume ratio`,
       weight: 10
     });
     weightedScore += 10 * 0.8;
-  } else if (marketCapTier === 'small' && volumeRatio > 0.05) {
+  } else if (marketCapTier === 'small' && volumeRatio > 0.03) {
     signals.push({
       type: 'technical',
       strength: 'moderate',
-      description: `Small-cap momentum: ${formatMarketCap(input.token.marketCap)} market cap`,
+      description: `Small-cap with momentum: ${formatMarketCap(input.token.marketCap)} showing volume`,
       weight: 10
     });
     weightedScore += 10 * 0.5;
@@ -210,9 +210,9 @@ function getNarrativeName(narrative: string): string {
 }
 
 function getMarketCapTier(marketCap: number): 'micro' | 'small' | 'mid' | 'large' {
-  if (marketCap < 50000000) return 'micro';
-  if (marketCap < 500000000) return 'small';
-  if (marketCap < 5000000000) return 'mid';
+  if (marketCap < 100000000) return 'micro';    // Under $100M
+  if (marketCap < 1000000000) return 'small';   // $100M - $1B
+  if (marketCap < 10000000000) return 'mid';    // $1B - $10B
   return 'large';
 }
 

@@ -26,6 +26,13 @@ export function Dashboard() {
   const [activeTab, setActiveTab] = useState<'tokens' | 'narratives' | 'breakout' | 'analysis'>('tokens');
   const [breakoutCandidates, setBreakoutCandidates] = useState<AnalysisResult[]>([]);
   const [showTokenDetail, setShowTokenDetail] = useState(false);
+  const [weeklyWorkflow, setWeeklyWorkflow] = useState([
+    { day: 'Mon', task: 'Parse funding rounds', status: 'completed', description: 'Scan for new funding announcements' },
+    { day: 'Tue', task: 'Dev commit analysis', status: 'completed', description: 'Check GitHub activity metrics' },
+    { day: 'Wed', task: 'Token unlock scan', status: 'pending', description: 'Review upcoming unlock schedules' },
+    { day: 'Thu', task: 'Smart money flows', status: 'pending', description: 'Analyze whale wallet movements' },
+    { day: 'Fri', task: 'Sentiment update', status: 'pending', description: 'Social media sentiment analysis' }
+  ]);
 
   // Fetch real data
   const { data: trendingTokens = [], isLoading: trendingLoading } = useTrendingTokens();
@@ -452,29 +459,39 @@ export function Dashboard() {
                     <Calendar className="w-6 h-6 text-primary-600" />
                     <span>Weekly Workflow</span>
                   </h3>
-                  <p className="text-gray-600 text-sm mt-1">Track your analysis routine</p>
+                  <p className="text-gray-600 text-sm mt-1">Professional 2-hour weekly routine</p>
                 </div>
               </div>
               <div className="space-y-4">
-                {[
-                  { day: 'Mon', task: 'Parse funding rounds', status: 'completed' },
-                  { day: 'Tue', task: 'Dev commit analysis', status: 'completed' },
-                  { day: 'Wed', task: 'Token unlock scan', status: 'pending' },
-                  { day: 'Thu', task: 'Smart money flows', status: 'pending' },
-                  { day: 'Fri', task: 'Sentiment update', status: 'pending' }
-                ].map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 border border-subtle hover:shadow-md transition-all duration-200">
+                {weeklyWorkflow.map((item, index) => (
+                  <div 
+                    key={index} 
+                    className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 border border-subtle hover:shadow-md transition-all duration-200 cursor-pointer"
+                    onClick={() => {
+                      const updated = [...weeklyWorkflow];
+                      updated[index].status = updated[index].status === 'completed' ? 'pending' : 'completed';
+                      setWeeklyWorkflow(updated);
+                    }}
+                  >
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg flex items-center justify-center">
                         <span className="text-xs font-bold text-primary-700">{item.day}</span>
                       </div>
-                      <span className="text-sm font-medium text-gray-700">{item.task}</span>
+                      <div>
+                        <span className="text-sm font-medium text-gray-700">{item.task}</span>
+                        <p className="text-xs text-gray-500">{item.description}</p>
+                      </div>
                     </div>
                     <div className={cn('w-3 h-3 rounded-full shadow-sm', 
                       item.status === 'completed' ? 'bg-success-500' : 'bg-gray-300'
                     )} />
                   </div>
                 ))}
+                <div className="mt-4 p-3 bg-primary-50 rounded-lg border border-primary-subtle">
+                  <p className="text-xs text-primary-700 font-medium">
+                    Total time: ~2 hours/week • Focus on micro-caps with volume
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -486,7 +503,7 @@ export function Dashboard() {
                     <AlertTriangle className="w-6 h-6 text-warning-600" />
                     <span>Risk Controls</span>
                   </h3>
-                  <p className="text-gray-600 text-sm mt-1">Essential safety guidelines</p>
+                  <p className="text-gray-600 text-sm mt-1">Non-negotiable position limits</p>
                 </div>
               </div>
               <div className="space-y-4">
@@ -501,6 +518,10 @@ export function Dashboard() {
                 <div className="p-4 bg-gradient-to-r from-primary-50 to-primary-100 rounded-xl border border-primary-subtle">
                   <p className="font-semibold text-primary-800 mb-1">Custody Rule</p>
                   <p className="text-primary-700 text-sm">Self-custody if held {'>'}1 week</p>
+                </div>
+                <div className="p-4 bg-gradient-to-r from-success-50 to-success-100 rounded-xl border border-success-subtle">
+                  <p className="font-semibold text-success-800 mb-1">Sweet Spot</p>
+                  <p className="text-success-700 text-sm">60-80th percentile engagement</p>
                 </div>
               </div>
             </div>

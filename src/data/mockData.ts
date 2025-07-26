@@ -144,8 +144,8 @@ export const mockSentiment: SentimentData[] = [
   {
     tokenId: 'render-token',
     twitterEngagement: 15420,
-    engagementPercentile: 75,
-    botScore: 8,
+    engagementPercentile: 72, // Sweet spot range
+    botScore: 12,
     socialScore: 82,
     mentionVolume24h: 2340,
     sentimentScore: 0.72
@@ -153,8 +153,8 @@ export const mockSentiment: SentimentData[] = [
   {
     tokenId: 'fetch-ai',
     twitterEngagement: 18950,
-    engagementPercentile: 68,
-    botScore: 12,
+    engagementPercentile: 65, // Sweet spot range
+    botScore: 14,
     socialScore: 76,
     mentionVolume24h: 3120,
     sentimentScore: 0.68
