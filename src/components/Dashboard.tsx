@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useQueries } from '@tanstack/react-query';
 import { Activity, TrendingUp, Users, Calendar, Target, AlertTriangle } from 'lucide-react';
 import { TokenCard } from './TokenCard';
+import { TokenDetailPage } from './TokenDetailPage';
 import { AnalysisPanel } from './AnalysisPanel';
 import { NarrativeCard } from './NarrativeCard';
 import { BreakoutRadar } from './BreakoutRadar';
@@ -24,6 +25,7 @@ export function Dashboard() {
   });
   const [activeTab, setActiveTab] = useState<'tokens' | 'narratives' | 'breakout' | 'analysis'>('tokens');
   const [breakoutCandidates, setBreakoutCandidates] = useState<AnalysisResult[]>([]);
+  const [showTokenDetail, setShowTokenDetail] = useState(false);
 
   // Fetch real data
   const { data: trendingTokens = [], isLoading: trendingLoading } = useTrendingTokens();
@@ -124,6 +126,20 @@ export function Dashboard() {
       catalysts: ['5G rollout', 'IoT expansion', 'Data storage demand']
     }
   ];
+
+  // If showing token detail, render that instead
+  if (showTokenDetail && selectedToken) {
+    const token = allTokens.find(t => t.id === selectedToken);
+    if (token) {
+      return (
+        <TokenDetailPage 
+          token={token}
+          analysis={selectedAnalysis}
+          onBack={() => setShowTokenDetail(false)}
+        />
+      );
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/20">
@@ -335,9 +351,13 @@ export function Dashboard() {
                       <TokenCard
                         key={token.id}
                         token={token}
-                        onClick={() => {
+                        onAnalyze={() => {
                           setSelectedToken(token.id);
                           setActiveTab('analysis');
+                        }}
+                        onViewDetail={() => {
+                          setSelectedToken(token.id);
+                          setShowTokenDetail(true);
                         }}
                         isSelected={selectedToken === token.id}
                       />
@@ -385,7 +405,7 @@ export function Dashboard() {
                   candidates={breakoutCandidates}
                   onTokenSelect={(tokenId) => {
                     setSelectedToken(tokenId);
-                    setActiveTab('analysis');
+                    setShowTokenDetail(true);
                   }}
                 />
               </div>

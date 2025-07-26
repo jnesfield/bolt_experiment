@@ -5,11 +5,12 @@ import { formatNumber, formatPercentage, cn } from '../utils';
 
 interface TokenCardProps {
   token: Token;
-  onClick: () => void;
+  onAnalyze: () => void;
+  onViewDetail: () => void;
   isSelected?: boolean;
 }
 
-export function TokenCard({ token, onClick, isSelected = false }: TokenCardProps) {
+export function TokenCard({ token, onAnalyze, onViewDetail, isSelected = false }: TokenCardProps) {
   const priceChangeColor = token.priceChange24h >= 0 ? 'text-success-600' : 'text-danger-600';
   const priceChangeIcon = token.priceChange24h >= 0 ? TrendingUp : TrendingDown;
   const PriceIcon = priceChangeIcon;
@@ -17,13 +18,15 @@ export function TokenCard({ token, onClick, isSelected = false }: TokenCardProps
   return (
     <div
       className={cn(
-        'card cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.03] hover:-translate-y-1 group',
+        'card transition-all duration-300 hover:shadow-xl hover:scale-[1.03] hover:-translate-y-1 group',
         isSelected && 'ring-2 ring-primary-500 shadow-xl scale-[1.02]'
       )}
-      onClick={onClick}
     >
       <div className="flex items-start justify-between mb-6">
-        <div className="flex items-center space-x-3">
+        <div 
+          className="flex items-center space-x-3 cursor-pointer"
+          onClick={onViewDetail}
+        >
           <div className="w-12 h-12 bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-lg group-hover:scale-110 transition-transform">
             {token.symbol.slice(0, 2)}
           </div>
@@ -82,6 +85,22 @@ export function TokenCard({ token, onClick, isSelected = false }: TokenCardProps
             {formatPercentage(token.priceChange30d)}
           </span>
         </div>
+      </div>
+      
+      {/* Action Buttons */}
+      <div className="pt-4 border-t border-gray-200/60 flex space-x-3">
+        <button
+          onClick={onViewDetail}
+          className="flex-1 btn btn-primary text-sm py-2"
+        >
+          View Details
+        </button>
+        <button
+          onClick={onAnalyze}
+          className="flex-1 btn btn-secondary text-sm py-2"
+        >
+          Analyze
+        </button>
       </div>
     </div>
   );
