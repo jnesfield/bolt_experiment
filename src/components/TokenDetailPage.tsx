@@ -195,116 +195,126 @@ export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProp
               {/* Chart */}
               <div className="h-[500px] mb-6">
                 <ResponsiveContainer width="100%" height="100%">
-                  {chartType === 'price' && (
-                    <ComposedChart data={priceHistory}>
-                      <defs>
-                        <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
-                        </linearGradient>
-                        <linearGradient id="volumeGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                      <XAxis 
-                        dataKey="date" 
-                        stroke="#6B7280"
-                        fontSize={12}
-                        tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      />
-                      <YAxis 
-                        yAxisId="price"
-                        orientation="left"
-                        stroke="#6B7280"
-                        fontSize={12}
-                        tickFormatter={(value) => `$${value.toFixed(2)}`}
-                      />
-                      <YAxis 
-                        yAxisId="volume"
-                        orientation="right"
-                        stroke="#6B7280"
-                        fontSize={12}
-                        tickFormatter={(value) => formatNumber(value)}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Area
-                        yAxisId="price"
-                        type="monotone"
-                        dataKey="price"
-                        stroke="#3B82F6"
-                        strokeWidth={3}
-                        fill="url(#priceGradient)"
-                      />
-                      <Bar
-                        yAxisId="volume"
-                        dataKey="volume"
-                        fill="url(#volumeGradient)"
-                        opacity={0.6}
-                      />
-                    </ComposedChart>
-                  )}
-                  
-                  {chartType === 'volume' && (
-                    <BarChart data={priceHistory}>
-                      <defs>
-                        <linearGradient id="volumeBarGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/>
-                          <stop offset="95%" stopColor="#10B981" stopOpacity={0.3}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                      <XAxis 
-                        dataKey="date" 
-                        stroke="#6B7280"
-                        fontSize={12}
-                        tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      />
-                      <YAxis 
-                        stroke="#6B7280"
-                        fontSize={12}
-                        tickFormatter={(value) => formatNumber(value)}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Bar
-                        dataKey="volume"
-                        fill="url(#volumeBarGradient)"
-                        radius={[2, 2, 0, 0]}
-                      />
-                    </BarChart>
-                  )}
-                  
-                  {chartType === 'marketcap' && (
-                    <AreaChart data={priceHistory}>
-                      <defs>
-                        <linearGradient id="marketCapGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                      <XAxis 
-                        dataKey="date" 
-                        stroke="#6B7280"
-                        fontSize={12}
-                        tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      />
-                      <YAxis 
-                        stroke="#6B7280"
-                        fontSize={12}
-                        tickFormatter={(value) => formatNumber(value)}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Area
-                        type="monotone"
-                        dataKey="marketCap"
-                        stroke="#8B5CF6"
-                        strokeWidth={2}
-                        fill="url(#marketCapGradient)"
-                      />
-                    </AreaChart>
-                  )}
+                  {(() => {
+                    if (chartType === 'price') {
+                      return (
+                        <ComposedChart data={priceHistory}>
+                          <defs>
+                            <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
+                              <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                            </linearGradient>
+                            <linearGradient id="volumeGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+                              <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                          <XAxis 
+                            dataKey="date" 
+                            stroke="#6B7280"
+                            fontSize={12}
+                            tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          />
+                          <YAxis 
+                            yAxisId="price"
+                            orientation="left"
+                            stroke="#6B7280"
+                            fontSize={12}
+                            tickFormatter={(value) => `$${value.toFixed(2)}`}
+                          />
+                          <YAxis 
+                            yAxisId="volume"
+                            orientation="right"
+                            stroke="#6B7280"
+                            fontSize={12}
+                            tickFormatter={(value) => formatNumber(value)}
+                          />
+                          <Tooltip content={<CustomTooltip />} />
+                          <Area
+                            yAxisId="price"
+                            type="monotone"
+                            dataKey="price"
+                            stroke="#3B82F6"
+                            strokeWidth={3}
+                            fill="url(#priceGradient)"
+                          />
+                          <Bar
+                            yAxisId="volume"
+                            dataKey="volume"
+                            fill="url(#volumeGradient)"
+                            opacity={0.6}
+                          />
+                        </ComposedChart>
+                      );
+                    }
+                    
+                    if (chartType === 'volume') {
+                      return (
+                        <BarChart data={priceHistory}>
+                          <defs>
+                            <linearGradient id="volumeBarGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/>
+                              <stop offset="95%" stopColor="#10B981" stopOpacity={0.3}/>
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                          <XAxis 
+                            dataKey="date" 
+                            stroke="#6B7280"
+                            fontSize={12}
+                            tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          />
+                          <YAxis 
+                            stroke="#6B7280"
+                            fontSize={12}
+                            tickFormatter={(value) => formatNumber(value)}
+                          />
+                          <Tooltip content={<CustomTooltip />} />
+                          <Bar
+                            dataKey="volume"
+                            fill="url(#volumeBarGradient)"
+                            radius={[2, 2, 0, 0]}
+                          />
+                        </BarChart>
+                      );
+                    }
+                    
+                    if (chartType === 'marketcap') {
+                      return (
+                        <AreaChart data={priceHistory}>
+                          <defs>
+                            <linearGradient id="marketCapGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3}/>
+                              <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0}/>
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                          <XAxis 
+                            dataKey="date" 
+                            stroke="#6B7280"
+                            fontSize={12}
+                            tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          />
+                          <YAxis 
+                            stroke="#6B7280"
+                            fontSize={12}
+                            tickFormatter={(value) => formatNumber(value)}
+                          />
+                          <Tooltip content={<CustomTooltip />} />
+                          <Area
+                            type="monotone"
+                            dataKey="marketCap"
+                            stroke="#8B5CF6"
+                            strokeWidth={2}
+                            fill="url(#marketCapGradient)"
+                          />
+                        </AreaChart>
+                      );
+                    }
+                    
+                    return null;
+                  })()}
                 </ResponsiveContainer>
               </div>
 
