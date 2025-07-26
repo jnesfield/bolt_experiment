@@ -21,6 +21,7 @@ import {
   Zap
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import { BarChart, Bar, ComposedChart } from 'recharts';
 import { Token, AnalysisResult } from '../types';
 import { formatNumber, formatPercentage, cn } from '../utils';
 
@@ -31,24 +32,33 @@ interface TokenDetailPageProps {
 }
 
 // Mock price history data - in real app this would come from API
-const generatePriceHistory = (currentPrice: number, days: number = 30) => {
+const generatePriceHistory = (token: Token, days: number = 30) => {
   const data = [];
-  let price = currentPrice * 0.7; // Start 30% lower
+  let price = token.price * 0.7; // Start 30% lower
+  let marketCap = token.marketCap * 0.7;
   const volatility = 0.05; // 5% daily volatility
   
   for (let i = 0; i < days; i++) {
     const change = (Math.random() - 0.5) * 2 * volatility;
     price = price * (1 + change);
+    marketCap = marketCap * (1 + change);
     
     data.push({
       date: new Date(Date.now() - (days - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       price: price,
-      volume: Math.random() * 50000000 + 10000000
+      volume: Math.random() * token.volume24h * 2 + token.volume24h * 0.5,
+      marketCap: marketCap,
+      high: price * (1 + Math.random() * 0.05),
+      low: price * (1 - Math.random() * 0.05),
+      open: price * (0.98 + Math.random() * 0.04),
+      close: price
     });
   }
   
   // Ensure last price matches current price
-  data[data.length - 1].price = currentPrice;
+  data[data.length - 1].price = token.price;
+  data[data.length - 1].marketCap = token.marketCap;
+  data[data.length - 1].volume = token.volume24h;
   
   return data;
 };
@@ -58,6 +68,7 @@ export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProp
   const [chartType, setChartType] = useState<'price' | 'volume'>('price');
   
   const priceHistory = generatePriceHistory(token.price, 30);
+  const priceHistory = generatePriceHistory(token, timeframe === '1D' ? 1 : timeframe === '7D' ? 7 : timeframe === '1M' ? 30 : timeframe === '3M' ? 90 : timeframe === '1Y' ? 365 : 730);
   const priceChange = token.priceChange24h;
   const isPositive = priceChange >= 0;
   
@@ -73,11 +84,30 @@ export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProp
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white/95 backdrop-blur-sm p-4 rounded-xl shadow-xl border border-gray-200/60">
+        <div className="bg-white/95 backdrop-blur-sm p-4 rounded-xl shadow-xl border border-gray-200">
           <p className="text-sm text-gray-600 mb-1">{label}</p>
-          <p className="font-bold text-lg text-gray-900">
-            ${payload[0].value.toFixed(4)}
-          </p>
+          {chartType === 'price' && (
+            <>
+              <p className="font-bold text-lg text-gray-900">
+                ${payload[0].value.toFixed(4)}
+              </p>
+              {payload.length > 1 && (
+                <p className="text-sm text-gray-600">
+                  Volume: {formatNumber(payload[1].value)}
+                </p>
+              )}
+            </>
+          )}
+          {chartType === 'volume' && (
+            <p className="font-bold text-lg text-gray-900">
+              {formatNumber(payload[0].value)}
+            </p>
+          )}
+          {chartType === 'marketcap' && (
+            <p className="font-bold text-lg text-gray-900">
+              {formatNumber(payload[0].value)}
+            </p>
+          )}
         </div>
       );
     }
@@ -164,36 +194,118 @@ export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProp
               </div>
 
               {/* Chart */}
-              <div className="h-96 mb-6">
+              <div className="h-[500px] mb-6">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={priceHistory}>
-                    <defs>
-                      <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                    <XAxis 
-                      dataKey="date" 
-                      stroke="#6B7280"
-                      fontSize={12}
-                      tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    />
-                    <YAxis 
-                      stroke="#6B7280"
-                      fontSize={12}
-                      tickFormatter={(value) => `$${value.toFixed(2)}`}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Area
-                      type="monotone"
-                      dataKey="price"
-                      stroke="#3B82F6"
-                      strokeWidth={2}
-                      fill="url(#priceGradient)"
-                    />
-                  </AreaChart>
+                  {chartType === 'price' && (
+                    <ComposedChart data={priceHistory}>
+                      <defs>
+                        <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                        </linearGradient>
+                        <linearGradient id="volumeGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                      <XAxis 
+                        dataKey="date" 
+                        stroke="#6B7280"
+                        fontSize={12}
+                        tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      />
+                      <YAxis 
+                        yAxisId="price"
+                        orientation="left"
+                        stroke="#6B7280"
+                        fontSize={12}
+                        tickFormatter={(value) => `$${value.toFixed(2)}`}
+                      />
+                      <YAxis 
+                        yAxisId="volume"
+                        orientation="right"
+                        stroke="#6B7280"
+                        fontSize={12}
+                        tickFormatter={(value) => formatNumber(value)}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Area
+                        yAxisId="price"
+                        type="monotone"
+                        dataKey="price"
+                        stroke="#3B82F6"
+                        strokeWidth={3}
+                        fill="url(#priceGradient)"
+                      />
+                      <Bar
+                        yAxisId="volume"
+                        dataKey="volume"
+                        fill="url(#volumeGradient)"
+                        opacity={0.6}
+                      />
+                    </ComposedChart>
+                  )}
+                  
+                  {chartType === 'volume' && (
+                    <BarChart data={priceHistory}>
+                      <defs>
+                        <linearGradient id="volumeBarGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="#10B981" stopOpacity={0.3}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                      <XAxis 
+                        dataKey="date" 
+                        stroke="#6B7280"
+                        fontSize={12}
+                        tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      />
+                      <YAxis 
+                        stroke="#6B7280"
+                        fontSize={12}
+                        tickFormatter={(value) => formatNumber(value)}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar
+                        dataKey="volume"
+                        fill="url(#volumeBarGradient)"
+                        radius={[2, 2, 0, 0]}
+                      />
+                    </BarChart>
+                  )}
+                  
+                  {chartType === 'marketcap' && (
+                    <AreaChart data={priceHistory}>
+                      <defs>
+                        <linearGradient id="marketCapGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                      <XAxis 
+                        dataKey="date" 
+                        stroke="#6B7280"
+                        fontSize={12}
+                        tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      />
+                      <YAxis 
+                        stroke="#6B7280"
+                        fontSize={12}
+                        tickFormatter={(value) => formatNumber(value)}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Area
+                        type="monotone"
+                        dataKey="marketCap"
+                        stroke="#8B5CF6"
+                        strokeWidth={2}
+                        fill="url(#marketCapGradient)"
+                      />
+                    </AreaChart>
+                  )}
                 </ResponsiveContainer>
               </div>
 
@@ -216,15 +328,28 @@ export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProp
                     className={cn(
                       'px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200',
                       chartType === 'volume'
-                        ? 'bg-primary-100 text-primary-800 border border-primary-200'
+                        ? 'bg-green-100 text-green-800 border border-green-200'
                         : 'text-gray-600 hover:bg-gray-100'
                     )}
                   >
                     Volume
                   </button>
+                  <button
+                    onClick={() => setChartType('marketcap')}
+                    className={cn(
+                      'px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200',
+                      chartType === 'marketcap'
+                        ? 'bg-purple-100 text-purple-800 border border-purple-200'
+                        : 'text-gray-600 hover:bg-gray-100'
+                    )}
+                  >
+                    Market Cap
+                  </button>
                 </div>
                 <div className="text-sm text-gray-500">
-                  Powered by real-time data
+                  {chartType === 'price' && 'Price with volume overlay'}
+                  {chartType === 'volume' && 'Trading volume over time'}
+                  {chartType === 'marketcap' && 'Market capitalization trend'}
                 </div>
               </div>
             </div>
@@ -235,26 +360,53 @@ export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProp
                 <div>
                   <h3 className="section-title">
                     <Activity className="w-6 h-6 text-primary-600" />
-                    Market Statistics
+                    Key Statistics
                   </h3>
-                  <p className="section-subtitle">Key market metrics and trading data</p>
+                  <p className="section-subtitle">Essential market metrics and performance indicators</p>
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {marketStats.map((stat, index) => (
-                  <div key={index} className="metric-card group hover:scale-105">
+                  <div key={index} className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-4 border border-gray-200 hover:shadow-lg transition-all duration-300 group hover:scale-105">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-semibold text-gray-600 mb-1">{stat.label}</p>
-                        <p className="text-lg font-bold text-gray-900">{stat.value}</p>
+                        <p className="text-xs font-semibold text-gray-600 mb-1">{stat.label}</p>
+                        <p className="text-sm font-bold text-gray-900">{stat.value}</p>
                       </div>
-                      <div className="w-10 h-10 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <DollarSign className="w-5 h-5 text-primary-600" />
+                      <div className="w-8 h-8 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <DollarSign className="w-4 h-4 text-primary-600" />
                       </div>
                     </div>
                   </div>
                 ))}
+                
+                {/* Additional CoinMarketCap-style stats */}
+                <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-4 border border-gray-200 hover:shadow-lg transition-all duration-300 group hover:scale-105">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 mb-1">All-Time High</p>
+                      <p className="text-sm font-bold text-gray-900">${(token.price * 2.5).toFixed(4)}</p>
+                      <p className="text-xs text-red-600">-{((1 - token.price / (token.price * 2.5)) * 100).toFixed(1)}%</p>
+                    </div>
+                    <div className="w-8 h-8 bg-gradient-to-br from-red-100 to-red-200 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <TrendingUp className="w-4 h-4 text-red-600" />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-4 border border-gray-200 hover:shadow-lg transition-all duration-300 group hover:scale-105">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 mb-1">All-Time Low</p>
+                      <p className="text-sm font-bold text-gray-900">${(token.price * 0.1).toFixed(4)}</p>
+                      <p className="text-xs text-green-600">+{((token.price / (token.price * 0.1) - 1) * 100).toFixed(0)}%</p>
+                    </div>
+                    <div className="w-8 h-8 bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <TrendingDown className="w-4 h-4 text-green-600" />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
