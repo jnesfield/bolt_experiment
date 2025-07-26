@@ -290,6 +290,8 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
                 ? "Perfect engagement range - high interest without excessive hype or bot manipulation"
                 : sentiment.engagementPercentile > 80 
                 ? "High engagement - monitor for excessive hype and potential top signals"
+                : sentiment.botScore >= 15
+                ? "High bot activity detected - be cautious of artificial engagement"
                 : "Low engagement - early stage or lacking momentum"}
             </p>
           </div>

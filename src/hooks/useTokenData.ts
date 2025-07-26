@@ -10,6 +10,7 @@ import {
   CRYPTO_GITHUB_REPOS
 } from '../services/dataTransformers';
 import { calculateBreakoutProbability } from '../services/breakoutAnalysis';
+import { sentimentAnalysisService } from '../services/sentimentAnalysis';
 import { Token, AnalysisResult, DeveloperMetrics } from '../types';
 
 // Add this function to the file
@@ -56,6 +57,20 @@ export async function performTokenAnalysis(tokenId: string): Promise<AnalysisRes
       narrative: narrative || undefined
     });
 
+    // Enhanced sentiment analysis using BERT model
+    const mockSocialText = `${token.name} ${token.symbol} cryptocurrency analysis`;
+    const sentimentAnalysis = await sentimentAnalysisService.analyzeSentiment(mockSocialText);
+    
+    // Generate realistic engagement metrics
+    const engagementPercentile = Math.floor(Math.random() * 40) + 50; // 50-90th percentile
+    const botScore = Math.floor(Math.random() * 25); // 0-25% bot activity
+    
+    const sweetSpotAnalysis = sentimentAnalysisService.calculateSweetSpotEngagement(
+      engagementPercentile,
+      botScore,
+      sentimentAnalysis.score
+    );
+
     // Calculate overall score and determine risk/recommendation
     const overallScore = calculateOverallScore(token, developerMetrics || undefined, narrative || undefined);
     const riskLevel = determineRiskLevel(overallScore, token);
@@ -98,11 +113,11 @@ export async function performTokenAnalysis(tokenId: string): Promise<AnalysisRes
       sentiment: {
         tokenId,
         twitterEngagement: Math.floor(Math.random() * 50000) + 5000,
-        engagementPercentile: Math.floor(Math.random() * 40) + 50,
-        botScore: Math.floor(Math.random() * 20),
-        socialScore: Math.floor(Math.random() * 40) + 60,
+        engagementPercentile,
+        botScore,
+        socialScore: sweetSpotAnalysis.sweetSpotScore,
         mentionVolume24h: Math.floor(Math.random() * 5000) + 1000,
-        sentimentScore: Math.random() * 0.6 + 0.2
+        sentimentScore: sentimentAnalysis.score
       },
       listing: {
         tokenId,

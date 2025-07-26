@@ -27,12 +27,25 @@ export function Dashboard() {
   const [breakoutCandidates, setBreakoutCandidates] = useState<AnalysisResult[]>([]);
   const [showTokenDetail, setShowTokenDetail] = useState(false);
   const [weeklyWorkflow, setWeeklyWorkflow] = useState([
-    { day: 'Mon', task: 'Parse funding rounds', status: 'completed', description: 'Scan for new funding announcements' },
-    { day: 'Tue', task: 'Dev commit analysis', status: 'completed', description: 'Check GitHub activity metrics' },
-    { day: 'Wed', task: 'Token unlock scan', status: 'pending', description: 'Review upcoming unlock schedules' },
-    { day: 'Thu', task: 'Smart money flows', status: 'pending', description: 'Analyze whale wallet movements' },
-    { day: 'Fri', task: 'Sentiment update', status: 'pending', description: 'Social media sentiment analysis' }
+    { day: 'Mon', task: 'Parse funding rounds', status: getCurrentDayStatus('Mon'), description: 'Scan for new funding announcements' },
+    { day: 'Tue', task: 'Dev commit analysis', status: getCurrentDayStatus('Tue'), description: 'Check GitHub activity metrics' },
+    { day: 'Wed', task: 'Token unlock scan', status: getCurrentDayStatus('Wed'), description: 'Review upcoming unlock schedules' },
+    { day: 'Thu', task: 'Smart money flows', status: getCurrentDayStatus('Thu'), description: 'Analyze whale wallet movements' },
+    { day: 'Fri', task: 'Sentiment update', status: getCurrentDayStatus('Fri'), description: 'Social media sentiment analysis' }
   ]);
+
+  // Helper function to determine task status based on current day
+  function getCurrentDayStatus(taskDay: string): 'completed' | 'pending' | 'current' {
+    const today = new Date().toLocaleDateString('en-US', { weekday: 'short' });
+    const dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    const todayIndex = dayOrder.indexOf(today);
+    const taskIndex = dayOrder.indexOf(taskDay);
+    
+    if (todayIndex === -1) return 'pending'; // Weekend - all pending
+    if (taskIndex < todayIndex) return 'completed';
+    if (taskIndex === todayIndex) return 'current';
+    return 'pending';
+  }
 
   // Fetch real data
   const { data: trendingTokens = [], isLoading: trendingLoading } = useTrendingTokens();
@@ -466,30 +479,60 @@ export function Dashboard() {
                 {weeklyWorkflow.map((item, index) => (
                   <div 
                     key={index} 
-                    className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 border border-subtle hover:shadow-md transition-all duration-200 cursor-pointer"
+                    className={cn(
+                      "flex items-center justify-between p-4 rounded-xl border hover:shadow-md transition-all duration-200 cursor-pointer",
+                      item.status === 'completed' ? 'bg-gradient-to-r from-success-50 to-success-100 border-success-subtle' :
+                      item.status === 'current' ? 'bg-gradient-to-r from-primary-50 to-primary-100 border-primary-subtle' :
+                      'bg-gradient-to-r from-gray-50 to-gray-100 border-subtle'
+                    )}
                     onClick={() => {
                       const updated = [...weeklyWorkflow];
-                      updated[index].status = updated[index].status === 'completed' ? 'pending' : 'completed';
+                      if (updated[index].status !== 'current') {
+                        updated[index].status = updated[index].status === 'completed' ? 'pending' : 'completed';
+                      }
                       setWeeklyWorkflow(updated);
                     }}
                   >
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg flex items-center justify-center">
-                        <span className="text-xs font-bold text-primary-700">{item.day}</span>
+                      <div className={cn(
+                        "w-8 h-8 rounded-lg flex items-center justify-center",
+                        item.status === 'completed' ? 'bg-gradient-to-br from-success-100 to-success-200' :
+                        item.status === 'current' ? 'bg-gradient-to-br from-primary-100 to-primary-200' :
+                        'bg-gradient-to-br from-gray-100 to-gray-200'
+                      )}>
+                        <span className={cn(
+                          "text-xs font-bold",
+                          item.status === 'completed' ? 'text-success-700' :
+                          item.status === 'current' ? 'text-primary-700' :
+                          'text-gray-700'
+                        )}>{item.day}</span>
                       </div>
                       <div>
-                        <span className="text-sm font-medium text-gray-700">{item.task}</span>
-                        <p className="text-xs text-gray-500">{item.description}</p>
+                        <span className={cn(
+                          "text-sm font-medium",
+                          item.status === 'current' ? 'text-primary-800' : 'text-gray-700'
+                        )}>{item.task}</span>
+                        <p className={cn(
+                          "text-xs",
+                          item.status === 'current' ? 'text-primary-600' : 'text-gray-500'
+                        )}>{item.description}</p>
                       </div>
                     </div>
                     <div className={cn('w-3 h-3 rounded-full shadow-sm', 
-                      item.status === 'completed' ? 'bg-success-500' : 'bg-gray-300'
+                      item.status === 'completed' ? 'bg-success-500' : 
+                      item.status === 'current' ? 'bg-primary-500 animate-pulse' :
+                      'bg-gray-300'
                     )} />
                   </div>
                 ))}
                 <div className="mt-4 p-3 bg-primary-50 rounded-lg border border-primary-subtle">
-                  <p className="text-xs text-primary-700 font-medium">
-                    Total time: ~2 hours/week • Focus on micro-caps with volume
+                  <p className="text-xs text-primary-700 font-medium mb-1">
+                    Total time: ~2 hours/week • Today is {new Date().toLocaleDateString('en-US', { weekday: 'long' })}
+                  </p>
+                  <p className="text-xs text-primary-600">
+                    {new Date().getDay() === 0 || new Date().getDay() === 6 
+                      ? "Weekend - No tasks scheduled. Enjoy your break!" 
+                      : "Focus on micro-caps with volume • Sweet spot: 60-80th percentile engagement"}
                   </p>
                 </div>
               </div>
