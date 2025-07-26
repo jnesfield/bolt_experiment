@@ -65,7 +65,7 @@ export class CryptoDataService {
     await limiter.waitIfNeeded();
     
     let retries = 0;
-    const maxRetries = 3;
+    const maxRetries = 8;
     
     while (retries <= maxRetries) {
       try {
