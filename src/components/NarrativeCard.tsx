@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, Flame, Calendar, DollarSign } from 'lucide-react';
+import { TrendingUp, Flame, Calendar, DollarSign, ArrowRight } from 'lucide-react';
 import { NarrativeData } from '../types';
 import { formatNumber, formatPercentage, cn } from '../utils';
 
@@ -67,6 +67,16 @@ export function NarrativeCard({ narrative, onClick }: NarrativeCardProps) {
             </span>
           )}
         </div>
+      </div>
+      
+      <div className="mt-4 pt-4 border-t border-gray-100">
+        <button
+          onClick={onClick}
+          className="w-full btn btn-primary text-sm py-2 hover:scale-105 transition-transform duration-200"
+        >
+          <span>Explore Narrative</span>
+          <ArrowRight className="w-4 h-4 ml-1" />
+        </button>
       </div>
     </div>
   );

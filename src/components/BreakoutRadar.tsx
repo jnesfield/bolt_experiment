@@ -184,6 +184,13 @@ export function BreakoutRadar({ candidates, onTokenSelect }: BreakoutRadarProps)
               </div>
 
               <div className="mt-4 pt-4 border-t border-gray-100">
+                <button
+                  onClick={() => onTokenSelect(token.id)}
+                  className="w-full btn btn-primary text-sm py-2 mb-3 hover:scale-105 transition-transform duration-200"
+                >
+                  <TrendingUp className="w-4 h-4 mr-1" />
+                  View Token Details
+                </button>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-600">Risk Level:</span>
                   <span className={cn('font-medium capitalize', 

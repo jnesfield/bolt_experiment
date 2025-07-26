@@ -91,14 +91,16 @@ export function TokenCard({ token, onAnalyze, onViewDetail, isSelected = false }
       <div className="pt-4 border-t border-subtle flex space-x-3">
         <button
           onClick={onViewDetail}
-          className="flex-1 btn btn-primary text-sm py-2"
+          className="flex-1 btn btn-primary text-sm py-2 hover:scale-105 transition-transform duration-200"
         >
+          <Activity className="w-4 h-4 mr-1" />
           View Details
         </button>
         <button
           onClick={onAnalyze}
-          className="flex-1 btn btn-secondary text-sm py-2"
+          className="flex-1 btn btn-secondary text-sm py-2 hover:scale-105 transition-transform duration-200"
         >
+          <TrendingUp className="w-4 h-4 mr-1" />
           Analyze
         </button>
       </div>

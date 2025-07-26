@@ -200,8 +200,9 @@ export function SearchBar({ onSearch, onFilterChange, onTokenSelect }: SearchBar
                   setFilters(resetFilters);
                   onFilterChange(resetFilters);
                 }}
-                className="text-sm text-primary-600 hover:text-primary-700 font-semibold bg-primary-50 hover:bg-primary-100 px-3 py-1 rounded-lg transition-all duration-200"
+                className="btn btn-secondary text-sm px-4 py-2 hover:scale-105 transition-transform duration-200"
               >
+                <TrendingUp className="w-4 h-4 mr-1" />
                 Reset Filters
               </button>
             </div>
