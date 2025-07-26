@@ -131,10 +131,12 @@ export async function performTokenAnalysis(tokenId: string): Promise<AnalysisRes
       recommendation,
       breakoutProbability,
       breakoutSignals
+    }
     if (sentiment.engagementPercentile >= 60 && sentiment.engagementPercentile <= 80 && sentiment.botScore < 15) {
-  } catch (error) {
+      } catch (error) {
     console.error('Error performing token analysis:', error);
     return null;
+  }
   }
 }
 
