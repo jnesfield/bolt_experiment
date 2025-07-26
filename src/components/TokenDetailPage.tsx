@@ -87,7 +87,7 @@ export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProp
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/20">
       {/* Header */}
-      <header className="bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200/60 sticky top-0 z-50">
+      <header className="bg-white/95 backdrop-blur-md shadow-lg border-b border-subtle sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             <div className="flex items-center space-x-4">
@@ -358,7 +358,7 @@ export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProp
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="p-6 bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl border border-primary-200/60">
+                  <div className="p-6 bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl border border-primary-subtle">
                     <h4 className="font-bold text-primary-900 mb-2">Investment Recommendation</h4>
                     <p className={cn('text-2xl font-bold capitalize mb-2', 
                       analysis.recommendation.includes('buy') ? 'text-success-600' : 
@@ -371,7 +371,7 @@ export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProp
                     </p>
                   </div>
                   
-                  <div className="p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl border border-orange-200/60">
+                  <div className="p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl border border-warning-subtle">
                     <h4 className="font-bold text-orange-900 mb-2">Breakout Probability</h4>
                     <p className="text-2xl font-bold text-orange-700 mb-2">
                       {analysis.breakoutProbability || 0}%
@@ -417,21 +417,21 @@ export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProp
                 </div>
               </div>
               <div className="space-y-3">
-                <a href="#" className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200/60 hover:shadow-md transition-all duration-200 group">
+                <a href="#" className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 border border-subtle hover:shadow-md transition-all duration-200 group">
                   <div className="flex items-center space-x-3">
                     <Globe className="w-5 h-5 text-gray-600" />
                     <span className="font-medium text-gray-700">Website</span>
                   </div>
                   <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
                 </a>
-                <a href="#" className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200/60 hover:shadow-md transition-all duration-200 group">
+                <a href="#" className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 border border-subtle hover:shadow-md transition-all duration-200 group">
                   <div className="flex items-center space-x-3">
                     <Github className="w-5 h-5 text-gray-600" />
                     <span className="font-medium text-gray-700">GitHub</span>
                   </div>
                   <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
                 </a>
-                <a href="#" className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200/60 hover:shadow-md transition-all duration-200 group">
+                <a href="#" className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 border border-subtle hover:shadow-md transition-all duration-200 group">
                   <div className="flex items-center space-x-3">
                     <Twitter className="w-5 h-5 text-gray-600" />
                     <span className="font-medium text-gray-700">Twitter</span>
@@ -452,12 +452,12 @@ export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProp
                 </div>
               </div>
               <div className="space-y-3">
-                <div className="p-4 bg-gradient-to-r from-warning-50 to-warning-100 rounded-xl border border-warning-200/60">
+                <div className="p-4 bg-gradient-to-r from-warning-50 to-warning-100 rounded-xl border border-warning-subtle">
                   <p className="text-warning-800 text-sm font-medium">
                     Cryptocurrency investments are highly volatile and risky. Never invest more than you can afford to lose.
                   </p>
                 </div>
-                <div className="p-4 bg-gradient-to-r from-danger-50 to-danger-100 rounded-xl border border-danger-200/60">
+                <div className="p-4 bg-gradient-to-r from-danger-50 to-danger-100 rounded-xl border border-danger-subtle">
                   <p className="text-danger-800 text-sm font-medium">
                     This analysis is for informational purposes only and should not be considered financial advice.
                   </p>

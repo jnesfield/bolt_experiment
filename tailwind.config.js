@@ -60,6 +60,14 @@ export default {
           900: '#7f1d1d',
         }
       },
+      borderColor: {
+        'subtle': 'rgba(229, 231, 235, 0.6)',
+        'light-subtle': 'rgba(243, 244, 246, 0.6)',
+        'primary-subtle': 'rgba(59, 130, 246, 0.6)',
+        'success-subtle': 'rgba(34, 197, 94, 0.6)',
+        'warning-subtle': 'rgba(245, 158, 11, 0.6)',
+        'danger-subtle': 'rgba(239, 68, 68, 0.6)',
+      },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.3s ease-out',

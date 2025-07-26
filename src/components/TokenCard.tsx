@@ -88,7 +88,7 @@ export function TokenCard({ token, onAnalyze, onViewDetail, isSelected = false }
       </div>
       
       {/* Action Buttons */}
-      <div className="pt-4 border-t border-gray-200/60 flex space-x-3">
+      <div className="pt-4 border-t border-subtle flex space-x-3">
         <button
           onClick={onViewDetail}
           className="flex-1 btn btn-primary text-sm py-2"

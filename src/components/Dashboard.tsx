@@ -46,7 +46,7 @@ export function Dashboard() {
 
   // Fetch analyses for breakout detection using useQueries
   const tokenAnalysisQueries = useQueries({
-    queries: allTokens.slice(0, 20).map(token => ({
+    queries: allTokens.slice(0, 5).map(token => ({
       queryKey: ['tokenAnalysis', token.id],
       queryFn: () => performTokenAnalysis(token.id),
       staleTime: 10 * 60 * 1000, // 10 minutes
@@ -144,7 +144,7 @@ export function Dashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/20">
       {/* Header */}
-      <header className="bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200/60 sticky top-0 z-50">
+      <header className="bg-white/95 backdrop-blur-md shadow-lg border-b border-subtle sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             <div className="flex items-center space-x-3">
@@ -160,7 +160,7 @@ export function Dashboard() {
             </div>
             <div className="flex items-center space-x-6">
               {/* Data freshness indicator */}
-              <div className="text-right bg-gray-50/80 rounded-lg px-3 py-2 border border-gray-200/60">
+              <div className="text-right bg-gray-50/80 rounded-lg px-3 py-2 border border-subtle">
                 <p className="text-xs text-gray-600 font-medium">
                   {(trendingLoading || aiLoading || depinLoading) ? 'Updating...' : 'Live Data'}
                 </p>
@@ -168,7 +168,7 @@ export function Dashboard() {
                   (trendingLoading || aiLoading || depinLoading) ? 'bg-warning-500 animate-pulse' : 'bg-success-500'
                 )} />
               </div>
-              <div className="text-right bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg px-4 py-2 border border-primary-200/60">
+              <div className="text-right bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg px-4 py-2 border border-primary-subtle">
                 <p className="text-sm text-primary-700 font-semibold">Market Overview</p>
                 <p className="font-bold text-primary-900 text-lg">{formatNumber(marketStats.totalMarketCap)}</p>
               </div>
@@ -260,7 +260,7 @@ export function Dashboard() {
               className={cn(
                 'px-6 py-3 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2',
                 activeTab === 'tokens' 
-                  ? 'bg-white text-primary-600 shadow-md border border-primary-200/60' 
+                  ? 'bg-white text-primary-600 shadow-md border border-primary-subtle' 
                   : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
               )}
             >
@@ -272,7 +272,7 @@ export function Dashboard() {
               className={cn(
                 'px-6 py-3 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2',
                 activeTab === 'narratives' 
-                  ? 'bg-white text-primary-600 shadow-md border border-primary-200/60' 
+                  ? 'bg-white text-primary-600 shadow-md border border-primary-subtle' 
                   : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
               )}
             >
@@ -284,7 +284,7 @@ export function Dashboard() {
               className={cn(
                 'px-6 py-3 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2 relative',
                 activeTab === 'breakout' 
-                  ? 'bg-white text-primary-600 shadow-md border border-primary-200/60' 
+                  ? 'bg-white text-primary-600 shadow-md border border-primary-subtle' 
                   : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
               )}
             >
@@ -302,7 +302,7 @@ export function Dashboard() {
                 className={cn(
                   'px-6 py-3 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center space-x-2',
                   activeTab === 'analysis' 
-                    ? 'bg-white text-primary-600 shadow-md border border-primary-200/60' 
+                    ? 'bg-white text-primary-600 shadow-md border border-primary-subtle' 
                     : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
                 )}
               >
@@ -339,7 +339,7 @@ export function Dashboard() {
                   />
                   
                   {(trendingLoading || aiLoading || depinLoading) && (
-                    <div className="text-center py-12 bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl border border-primary-200/60">
+                    <div className="text-center py-12 bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl border border-primary-subtle">
                       <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-600 border-t-transparent mx-auto mb-4"></div>
                       <p className="text-primary-700 font-semibold">Loading token data...</p>
                       <p className="text-primary-600 text-sm mt-1">Fetching real-time market information</p>
@@ -424,7 +424,7 @@ export function Dashboard() {
                 </div>
                 
                 {analysisLoading && (
-                  <div className="text-center py-12 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200/60">
+                  <div className="text-center py-12 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-subtle">
                     <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent mx-auto mb-4"></div>
                     <p className="text-purple-700 font-semibold">Analyzing token data...</p>
                     <p className="text-purple-600 text-sm mt-1">Processing multiple data sources</p>
@@ -463,7 +463,7 @@ export function Dashboard() {
                   { day: 'Thu', task: 'Smart money flows', status: 'pending' },
                   { day: 'Fri', task: 'Sentiment update', status: 'pending' }
                 ].map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200/60 hover:shadow-md transition-all duration-200">
+                  <div key={index} className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 border border-subtle hover:shadow-md transition-all duration-200">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg flex items-center justify-center">
                         <span className="text-xs font-bold text-primary-700">{item.day}</span>
@@ -490,15 +490,15 @@ export function Dashboard() {
                 </div>
               </div>
               <div className="space-y-4">
-                <div className="p-4 bg-gradient-to-r from-warning-50 to-warning-100 rounded-xl border border-warning-200/60">
+                <div className="p-4 bg-gradient-to-r from-warning-50 to-warning-100 rounded-xl border border-warning-subtle">
                   <p className="font-semibold text-warning-800 mb-1">Portfolio Sizing</p>
                   <p className="text-warning-700 text-sm">Max 1% per micro-cap position</p>
                 </div>
-                <div className="p-4 bg-gradient-to-r from-danger-50 to-danger-100 rounded-xl border border-danger-200/60">
+                <div className="p-4 bg-gradient-to-r from-danger-50 to-danger-100 rounded-xl border border-danger-subtle">
                   <p className="font-semibold text-danger-800 mb-1">Leverage Policy</p>
                   <p className="text-danger-700 text-sm">No leverage on small caps</p>
                 </div>
-                <div className="p-4 bg-gradient-to-r from-primary-50 to-primary-100 rounded-xl border border-primary-200/60">
+                <div className="p-4 bg-gradient-to-r from-primary-50 to-primary-100 rounded-xl border border-primary-subtle">
                   <p className="font-semibold text-primary-800 mb-1">Custody Rule</p>
                   <p className="text-primary-700 text-sm">Self-custody if held {'>'}1 week</p>
                 </div>
@@ -515,7 +515,7 @@ export function Dashboard() {
                   </div>
                 </div>
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200/60">
+                  <div className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-subtle">
                     <span className="text-sm font-medium text-gray-600">Overall Score</span>
                     <span className={cn('font-bold text-lg', 
                       selectedAnalysis.overallScore >= 70 ? 'text-success-600' : 
@@ -524,7 +524,7 @@ export function Dashboard() {
                       {selectedAnalysis.overallScore}/100
                     </span>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200/60">
+                  <div className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-subtle">
                     <span className="text-sm font-medium text-gray-600">Risk Level</span>
                     <span className={cn('font-bold capitalize', 
                       selectedAnalysis.riskLevel === 'low' ? 'text-success-600' : 
@@ -533,7 +533,7 @@ export function Dashboard() {
                       {selectedAnalysis.riskLevel}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200/60">
+                  <div className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-subtle">
                     <span className="text-sm font-medium text-gray-600">Recommendation</span>
                     <span className={cn('font-bold capitalize', 
                       selectedAnalysis.recommendation.includes('buy') ? 'text-success-600' : 

@@ -60,13 +60,13 @@ export function SearchBar({ onSearch, onFilterChange, onTokenSelect }: SearchBar
           value={query}
           onChange={(e) => handleSearch(e.target.value)}
           onFocus={() => query.length > 2 && setShowResults(true)}
-          className="input pl-12 pr-14 w-full h-14 text-base font-medium bg-white/80 backdrop-blur-sm border-2 border-gray-200/60 focus:border-primary-400 shadow-lg"
+          className="input pl-12 pr-14 w-full h-14 text-base font-medium bg-white/80 backdrop-blur-sm border-2 border-subtle focus:border-primary-400 shadow-lg"
         />
         <button
           onClick={() => setShowFilters(!showFilters)}
           className={cn(
             'absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-lg transition-all duration-200 shadow-sm',
-            showFilters ? 'text-primary-600 bg-primary-100 border border-primary-200' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 border border-gray-200'
+            showFilters ? 'text-primary-600 bg-primary-100 border border-primary-subtle' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 border border-subtle'
           )}
         >
           <Filter className="w-5 h-5" />
@@ -74,12 +74,12 @@ export function SearchBar({ onSearch, onFilterChange, onTokenSelect }: SearchBar
         
         {/* Search Results Dropdown */}
         {showResults && searchResults?.coins && searchResults.coins.length > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-md border-2 border-gray-200/60 rounded-xl shadow-2xl z-50 max-h-64 overflow-y-auto">
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-md border-2 border-subtle rounded-xl shadow-2xl z-50 max-h-64 overflow-y-auto">
             {searchResults.coins.slice(0, 10).map((coin: any) => (
               <button
                 key={coin.id}
                 onClick={() => handleTokenSelect(coin.id, coin.name)}
-                className="w-full px-6 py-4 text-left hover:bg-primary-50/80 flex items-center space-x-4 border-b border-gray-100/60 last:border-b-0 transition-all duration-200 group"
+                className="w-full px-6 py-4 text-left hover:bg-primary-50/80 flex items-center space-x-4 border-b border-light-subtle last:border-b-0 transition-all duration-200 group"
               >
                 <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center text-white font-bold text-xs shadow-md group-hover:scale-110 transition-transform">
                   {coin.symbol?.slice(0, 2).toUpperCase() || coin.name?.slice(0, 2).toUpperCase()}
@@ -120,7 +120,7 @@ export function SearchBar({ onSearch, onFilterChange, onTokenSelect }: SearchBar
               <select
                 value={filters.minMarketCap}
                 onChange={(e) => handleFilterChange('minMarketCap', Number(e.target.value))}
-                className="input bg-white/80 border-2 border-gray-200/60 focus:border-primary-400"
+                className="input bg-white/80 border-2 border-subtle focus:border-primary-400"
               >
                 <option value={0}>Any</option>
                 <option value={1000000}>$1M+</option>
@@ -137,7 +137,7 @@ export function SearchBar({ onSearch, onFilterChange, onTokenSelect }: SearchBar
               <select
                 value={filters.minVolume}
                 onChange={(e) => handleFilterChange('minVolume', Number(e.target.value))}
-                className="input bg-white/80 border-2 border-gray-200/60 focus:border-primary-400"
+                className="input bg-white/80 border-2 border-subtle focus:border-primary-400"
               >
                 <option value={0}>Any</option>
                 <option value={100000}>$100K+</option>
@@ -154,7 +154,7 @@ export function SearchBar({ onSearch, onFilterChange, onTokenSelect }: SearchBar
               <select
                 value={filters.narrativeFilter}
                 onChange={(e) => handleFilterChange('narrativeFilter', e.target.value)}
-                className="input bg-white/80 border-2 border-gray-200/60 focus:border-primary-400"
+                className="input bg-white/80 border-2 border-subtle focus:border-primary-400"
               >
                 <option value="">All Narratives</option>
                 <option value="ai">AI & ML</option>
@@ -172,7 +172,7 @@ export function SearchBar({ onSearch, onFilterChange, onTokenSelect }: SearchBar
               <select
                 value={filters.riskLevel}
                 onChange={(e) => handleFilterChange('riskLevel', e.target.value)}
-                className="input bg-white/80 border-2 border-gray-200/60 focus:border-primary-400"
+                className="input bg-white/80 border-2 border-subtle focus:border-primary-400"
               >
                 <option value="">Any Risk</option>
                 <option value="low">Low Risk</option>
@@ -182,7 +182,7 @@ export function SearchBar({ onSearch, onFilterChange, onTokenSelect }: SearchBar
             </div>
           </div>
 
-          <div className="mt-6 pt-6 border-t border-gray-200/60">
+          <div className="mt-6 pt-6 border-t border-subtle">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2 text-sm text-gray-600 font-medium">
                 <TrendingUp className="w-4 h-4" />
