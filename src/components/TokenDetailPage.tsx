@@ -67,7 +67,6 @@ export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProp
   const [timeframe, setTimeframe] = useState<'1D' | '7D' | '1M' | '3M' | '1Y' | 'ALL'>('1M');
   const [chartType, setChartType] = useState<'price' | 'volume'>('price');
   
-  const priceHistory = generatePriceHistory(token.price, 30);
   const priceHistory = generatePriceHistory(token, timeframe === '1D' ? 1 : timeframe === '7D' ? 7 : timeframe === '1M' ? 30 : timeframe === '3M' ? 90 : timeframe === '1Y' ? 365 : 730);
   const priceChange = token.priceChange24h;
   const isPositive = priceChange >= 0;
