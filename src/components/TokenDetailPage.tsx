@@ -34,8 +34,8 @@ interface TokenDetailPageProps {
 // Mock price history data - in real app this would come from API
 const generatePriceHistory = (token: Token, days: number = 30) => {
   const data = [];
-  let price = token.price * 0.7; // Start 30% lower
-  let marketCap = token.marketCap * 0.7;
+  let price = token.price * 0.8; // Start 20% lower
+  let marketCap = token.marketCap * 0.8;
   const volatility = 0.05; // 5% daily volatility
   
   for (let i = 0; i < days; i++) {
@@ -44,7 +44,7 @@ const generatePriceHistory = (token: Token, days: number = 30) => {
     marketCap = marketCap * (1 + change);
     
     data.push({
-      date: new Date(Date.now() - (days - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      date: new Date(Date.now() - (days - i) * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       price: price,
       volume: Math.random() * token.volume24h * 2 + token.volume24h * 0.5,
       marketCap: marketCap,
@@ -64,8 +64,8 @@ const generatePriceHistory = (token: Token, days: number = 30) => {
 };
 
 export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProps) {
-  const [timeframe, setTimeframe] = useState<'1D' | '7D' | '1M' | '3M' | '1Y' | 'ALL'>('1M');
-  const [chartType, setChartType] = useState<'price' | 'volume'>('price');
+  const [timeframe, setTimeframe] = useState<'1D' | '7D' | '1M' | '3M' | '1Y' | 'ALL'>('7D');
+  const [chartType, setChartType] = useState<'price' | 'volume' | 'marketCap'>('price');
   
   const priceHistory = generatePriceHistory(token, timeframe === '1D' ? 1 : timeframe === '7D' ? 7 : timeframe === '1M' ? 30 : timeframe === '3M' ? 90 : timeframe === '1Y' ? 365 : 730);
   const priceChange = token.priceChange24h;
@@ -90,7 +90,7 @@ export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProp
               <p className="font-bold text-lg text-gray-900">
                 ${payload[0].value.toFixed(4)}
               </p>
-              {payload.length > 1 && (
+              {payload[1] && (
                 <p className="text-sm text-gray-600">
                   Volume: {formatNumber(payload[1].value)}
                 </p>
@@ -102,7 +102,7 @@ export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProp
               {formatNumber(payload[0].value)}
             </p>
           )}
-          {chartType === 'marketcap' && (
+          {chartType === 'marketCap' && (
             <p className="font-bold text-lg text-gray-900">
               {formatNumber(payload[0].value)}
             </p>
@@ -193,7 +193,7 @@ export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProp
               </div>
 
               {/* Chart */}
-              <div className="h-[500px] mb-6">
+              <div className="h-[400px] mb-6 bg-white rounded-lg p-4">
                 <ResponsiveContainer width="100%" height="100%">
                   {(() => {
                     if (chartType === 'price') {
@@ -214,7 +214,6 @@ export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProp
                             dataKey="date" 
                             stroke="#6B7280"
                             fontSize={12}
-                            tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           />
                           <YAxis 
                             yAxisId="price"
@@ -263,7 +262,6 @@ export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProp
                             dataKey="date" 
                             stroke="#6B7280"
                             fontSize={12}
-                            tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           />
                           <YAxis 
                             stroke="#6B7280"
@@ -280,7 +278,7 @@ export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProp
                       );
                     }
                     
-                    if (chartType === 'marketcap') {
+                    if (chartType === 'marketCap') {
                       return (
                         <AreaChart data={priceHistory}>
                           <defs>
@@ -294,7 +292,6 @@ export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProp
                             dataKey="date" 
                             stroke="#6B7280"
                             fontSize={12}
-                            tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           />
                           <YAxis 
                             stroke="#6B7280"
@@ -344,10 +341,10 @@ export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProp
                     Volume
                   </button>
                   <button
-                    onClick={() => setChartType('marketcap')}
+                    onClick={() => setChartType('marketCap')}
                     className={cn(
                       'px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200',
-                      chartType === 'marketcap'
+                      chartType === 'marketCap'
                         ? 'bg-purple-100 text-purple-800 border border-purple-200'
                         : 'text-gray-600 hover:bg-gray-100'
                     )}
@@ -358,7 +355,7 @@ export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProp
                 <div className="text-sm text-gray-500">
                   {chartType === 'price' && 'Price with volume overlay'}
                   {chartType === 'volume' && 'Trading volume over time'}
-                  {chartType === 'marketcap' && 'Market capitalization trend'}
+                  {chartType === 'marketCap' && 'Market capitalization trend'}
                 </div>
               </div>
             </div>
@@ -610,10 +607,10 @@ export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProp
                   <span>Volume</span>
                 </button>
                 <button
-                  onClick={() => setChartType('marketcap')}
+                  onClick={() => setChartType('marketCap')}
                   className={cn(
                     'px-6 py-3 text-sm font-semibold rounded-lg transition-all duration-200 hover:scale-105 flex items-center space-x-2 w-full',
-                    chartType === 'marketcap'
+                    chartType === 'marketCap'
                       ? 'bg-purple-600 text-white shadow-lg border-2 border-purple-400'
                       : 'text-gray-600 hover:bg-gray-100 border-2 border-gray-200 hover:border-gray-300'
                   )}
