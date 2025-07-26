@@ -1,7 +1,7 @@
 // Hugging Face BERT-based sentiment analysis service
 class SentimentAnalysisService {
   private readonly API_URL = 'https://api-inference.huggingface.co/models/cardiffnlp/twitter-roberta-base-sentiment-latest';
-  private readonly API_KEY = process.env.HUGGINGFACE_API_KEY || '';
+  private readonly API_KEY = import.meta.env.VITE_HUGGINGFACE_API_KEY || '';
 
   async analyzeSentiment(text: string): Promise<{
     sentiment: 'positive' | 'negative' | 'neutral';
