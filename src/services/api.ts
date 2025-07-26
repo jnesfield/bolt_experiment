@@ -27,7 +27,7 @@ class RateLimiter {
   }
 }
 
-const coinGeckoLimiter = new RateLimiter(5, 60000); // 5 requests per minute
+const coinGeckoLimiter = new RateLimiter(3, 60000); // 3 requests per minute
 const githubLimiter = new RateLimiter(60, 3600000); // 60 requests per hour
 
 export interface CoinGeckoToken {
@@ -63,27 +63,53 @@ export class CryptoDataService {
   private async fetchWithRateLimit(url: string, limiter: RateLimiter): Promise<Response> {
     await limiter.waitIfNeeded();
     
-    try {
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        mode: 'cors',
-      });
-      
-      if (!response.ok) {
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    let retries = 0;
+    const maxRetries = 3;
+    
+    while (retries <= maxRetries) {
+      try {
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          mode: 'cors',
+        });
+        
+        if (response.status === 429) {
+          // Rate limited - implement exponential backoff
+          if (retries < maxRetries) {
+            const backoffDelay = Math.pow(2, retries) * 1000; // 1s, 2s, 4s
+            console.warn(`Rate limited, retrying in ${backoffDelay}ms (attempt ${retries + 1}/${maxRetries + 1})`);
+            await new Promise(resolve => setTimeout(resolve, backoffDelay));
+            retries++;
+            continue;
+          }
+        }
+        
+        if (!response.ok) {
+          throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        }
+        
+        return response;
+      } catch (error) {
+        // If it's a network error (CORS, connection failed, etc.), throw with more context
+        if (error instanceof TypeError && error.message === 'Failed to fetch') {
+          throw new Error(`Network error: Unable to connect to API. This may be due to CORS restrictions or network connectivity issues.`);
+        }
+        
+        // For other errors, retry if we haven't exceeded max retries
+        if (retries < maxRetries) {
+          const backoffDelay = Math.pow(2, retries) * 1000;
+          console.warn(`Request failed, retrying in ${backoffDelay}ms (attempt ${retries + 1}/${maxRetries + 1}):`, error.message);
+          await new Promise(resolve => setTimeout(resolve, backoffDelay));
+          retries++;
+          continue;
+        }
+        
+        throw error;
       }
-      
-      return response;
-    } catch (error) {
-      // If it's a network error (CORS, connection failed, etc.), throw with more context
-      if (error instanceof TypeError && error.message === 'Failed to fetch') {
-        throw new Error(`Network error: Unable to connect to API. This may be due to CORS restrictions or network connectivity issues.`);
-      }
-      throw error;
     }
   }
 
