@@ -121,7 +121,7 @@ export class CryptoDataService {
       const idsParam = tokenIds.join(',');
       const url = `${COINGECKO_BASE_URL}/coins/markets?vs_currency=usd&ids=${idsParam}&order=market_cap_desc&per_page=250&page=1&sparkline=false&price_change_percentage=24h,7d,30d`;
       
-      const response = await this.fetchWithRateLimit(url, coinGeckoLimiter);
+      const response = await this.fetchWithRateLimit(url, coinGeckoLimiter2);
       const data = await response.json();
       
       // Cache successful response
