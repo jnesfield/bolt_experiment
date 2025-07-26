@@ -28,7 +28,7 @@ class RateLimiter {
 }
 
 const coinGeckoLimiter = new RateLimiter(3, 60000); // 3 requests per minute
-const coinGeckoLimiter2 = new RateLimiter(10, 60000); // 10 requests per minute
+const coinGeckoLimiter2 = new RateLimiter(50, 60000); // 50 requests per minute
 const githubLimiter = new RateLimiter(60, 3600000); // 60 requests per hour
 
 export interface CoinGeckoToken {
