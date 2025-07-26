@@ -553,31 +553,35 @@ export function TokenDetailPage({ token, analysis, onBack }: TokenDetailPageProp
               <div className="section-header">
                 <div>
                   <h3 className="text-lg font-bold text-gray-900">Quick Actions</h3>
-                  <p className="text-gray-600 text-sm mt-1">Trading and portfolio actions</p>
+                  <p className="text-gray-600 text-sm mt-1">Manage your portfolio</p>
                 </div>
               </div>
               <div className="space-y-3">
-                <button className="btn btn-primary w-full">
-                  <Copy className="w-4 h-4" />
-                  <span>Copy Address</span>
+                <button className="btn btn-primary w-full hover:scale-105 transition-transform duration-200">
+                  <Star className="w-4 h-4 mr-2" />
+                  Add to Watchlist
                 </button>
-                <button className="btn btn-secondary w-full">
-                  <Star className="w-4 h-4" />
-                  <span>Add to Watchlist</span>
+                <button className="btn btn-secondary w-full hover:scale-105 transition-transform duration-200">
+                  <Copy className="w-4 h-4 mr-2" />
+                  Copy Address
                 </button>
-                <button className="btn btn-secondary w-full">
-                  <Share2 className="w-4 h-4" />
-                  <span>Share Token</span>
+                <button className="btn btn-secondary w-full hover:scale-105 transition-transform duration-200">
+                  <AlertTriangle className="w-4 h-4 mr-2" />
+                  Set Price Alert
+                </button>
+                <button className="btn btn-secondary w-full hover:scale-105 transition-transform duration-200">
+                  <Share2 className="w-4 h-4 mr-2" />
+                  Share Token
                 </button>
               </div>
             </div>
 
-            {/* Chart Controls */}
+            {/* Chart Type Selector */}
             <div className="section-card">
               <div className="section-header">
                 <div>
                   <h3 className="text-lg font-bold text-gray-900">Chart View</h3>
-                  <p className="text-gray-600 text-sm mt-1">Select chart type</p>
+                  <p className="text-gray-600 text-sm mt-1">Select data to display</p>
                 </div>
               </div>
               <div className="space-y-2">
