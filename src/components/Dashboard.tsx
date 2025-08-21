@@ -366,7 +366,6 @@ export function Dashboard() {
                     </div>
                   )}
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
                     {filteredTokens.map(token => (
                       <TokenCard
@@ -561,7 +560,7 @@ export function Dashboard() {
                 </div>
                 <div className="p-4 bg-gradient-to-r from-primary-50 to-primary-100 rounded-xl border border-primary-subtle">
                   <p className="font-semibold text-primary-800 mb-1">Custody Rule</p>
-                  <p className="text-primary-700 text-sm">Self-custody if held {'>'}1 week</p>
+                  <p className="text-primary-700 text-sm">Self-custody if held {'>'} 1 week</p>
                 </div>
                 <div className="p-4 bg-gradient-to-r from-success-50 to-success-100 rounded-xl border border-success-subtle">
                   <p className="font-semibold text-success-800 mb-1">Sweet Spot</p>
