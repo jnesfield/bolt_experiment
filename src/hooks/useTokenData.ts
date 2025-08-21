@@ -14,7 +14,7 @@ import { sentimentAnalysisService } from '../services/sentimentAnalysis';
 import { Token, AnalysisResult, DeveloperMetrics } from '../types';
 
 // Add this function to the file
-export async function performTokenAnalysis(tokenId: string): Promise<AnalysisResult | null> {
+async function performTokenAnalysis(tokenId: string): Promise<AnalysisResult | null> {
   try {
     const [tokenData] = await cryptoDataService.getTokenData([tokenId]);
     if (!tokenData) return null;
@@ -152,6 +152,9 @@ export async function performTokenAnalysis(tokenId: string): Promise<AnalysisRes
     return null;
   }
 }
+
+// Export the function
+export { performTokenAnalysis };
 
 export function useTokenData(tokenIds: string[]) {
   return useQuery({
