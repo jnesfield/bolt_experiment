@@ -1,10 +1,35 @@
 @tailwind base;
 @tailwind components;
-@tailwind utilities {
+@tailwind utilities;
+
+@layer base {
   * {
     @apply border-gray-200;
   }
   
+  body {
+    @apply bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900 font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+  
+  h1 {
+    @apply text-3xl;
+  }
+  
+  h2 {
+    @apply text-2xl;
+  }
+  
+  h3 {
+    @apply text-xl;
+  }
+}
+
+@layer components {
   .card {
     @apply bg-white rounded-xl shadow-lg border border-gray-200 p-6 backdrop-blur-sm;
     background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%);
@@ -81,29 +106,6 @@
   
   .divider {
     @apply border-t border-gray-200 my-8;
-  }
-}
-
-@layer base {
-  body {
-    @apply bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900 font-sans;
-    font-feature-settings: "rlig" 1, "calt" 1;
-  }
-  
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-bold tracking-tight;
-  }
-  
-  h1 {
-    @apply text-3xl;
-  }
-  
-  h2 {
-    @apply text-2xl;
-  }
-  
-  h3 {
-    @apply text-xl;
   }
 }
 
