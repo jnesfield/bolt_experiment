@@ -84,6 +84,5 @@ export default {
       }
     },
   },
-      ...colors,
   plugins: [],
 }
