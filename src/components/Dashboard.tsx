@@ -7,6 +7,7 @@ import { AnalysisPanel } from './AnalysisPanel';
 import { NarrativeCard } from './NarrativeCard';
 import { BreakoutRadar } from './BreakoutRadar';
 import { SearchBar, SearchFilters } from './SearchBar';
+import { WorkflowPanel } from './WorkflowPanel';
 import { useTokenData, useTrendingTokens, useTokensByCategory, useTokenAnalysis, useGlobalMarketData } from '../hooks/useTokenData';
 import { identifyBreakoutCandidates } from '../services/breakoutAnalysis';
 import { AnalysisResult, Token } from '../types';
@@ -26,26 +27,6 @@ export function Dashboard() {
   const [activeTab, setActiveTab] = useState<'tokens' | 'narratives' | 'breakout' | 'analysis'>('tokens');
   const [breakoutCandidates, setBreakoutCandidates] = useState<AnalysisResult[]>([]);
   const [showTokenDetail, setShowTokenDetail] = useState(false);
-  const [weeklyWorkflow, setWeeklyWorkflow] = useState([
-    { day: 'Mon', task: 'Parse funding rounds', status: getCurrentDayStatus('Mon'), description: 'Scan for new funding announcements' },
-    { day: 'Tue', task: 'Dev commit analysis', status: getCurrentDayStatus('Tue'), description: 'Check GitHub activity metrics' },
-    { day: 'Wed', task: 'Token unlock scan', status: getCurrentDayStatus('Wed'), description: 'Review upcoming unlock schedules' },
-    { day: 'Thu', task: 'Smart money flows', status: getCurrentDayStatus('Thu'), description: 'Analyze whale wallet movements' },
-    { day: 'Fri', task: 'Sentiment update', status: getCurrentDayStatus('Fri'), description: 'Social media sentiment analysis' }
-  ]);
-
-  // Helper function to determine task status based on current day
-  function getCurrentDayStatus(taskDay: string): 'completed' | 'pending' | 'current' {
-    const today = new Date().toLocaleDateString('en-US', { weekday: 'short' });
-    const dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-    const todayIndex = dayOrder.indexOf(today);
-    const taskIndex = dayOrder.indexOf(taskDay);
-    
-    if (todayIndex === -1) return 'pending'; // Weekend - all pending
-    if (taskIndex < todayIndex) return 'completed';
-    if (taskIndex === todayIndex) return 'current';
-    return 'pending';
-  }
 
   // Fetch real data
   const { data: trendingTokens = [], isLoading: trendingLoading } = useTrendingTokens();
@@ -464,78 +445,9 @@ export function Dashboard() {
 
           {/* Sidebar */}
           <div className="space-y-8">
-            {/* Weekly Workflow */}
+            {/* Interactive Workflow */}
             <div className="section-card">
-              <div className="section-header">
-                <div>
-                  <h3 className="text-xl font-bold text-white flex items-center space-x-3">
-                    <Calendar className="w-7 h-7 text-cyan-400" />
-                    <span>Weekly Workflow</span>
-                  </h3>
-                  <p className="text-gray-300 text-sm mt-2">Professional 2-hour weekly routine</p>
-                </div>
-              </div>
-              <div className="space-y-5">
-                {weeklyWorkflow.map((item, index) => (
-                  <div 
-                    key={index} 
-                    className={cn(
-                      "flex items-center justify-between p-5 rounded-2xl border hover:shadow-lg transition-all duration-300 cursor-pointer backdrop-blur-sm",
-                      item.status === 'completed' ? 'bg-green-500/10 border-green-400/30' :
-                      item.status === 'current' ? 'bg-cyan-500/10 border-cyan-400/30 animate-glow' :
-                      'bg-white/5 border-white/10'
-                    )}
-                    onClick={() => {
-                      const updated = [...weeklyWorkflow];
-                      if (updated[index].status !== 'current') {
-                        updated[index].status = updated[index].status === 'completed' ? 'pending' : 'completed';
-                      }
-                      setWeeklyWorkflow(updated);
-                    }}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className={cn(
-                        "w-12 h-12 rounded-xl flex items-center justify-center border",
-                        item.status === 'completed' ? 'bg-green-500/20 border-green-400/30' :
-                        item.status === 'current' ? 'bg-cyan-500/20 border-cyan-400/30' :
-                        'bg-white/10 border-white/20'
-                      )}>
-                        <span className={cn(
-                          "text-sm font-bold",
-                          item.status === 'completed' ? 'text-green-300' :
-                          item.status === 'current' ? 'text-cyan-300' :
-                          'text-gray-300'
-                        )}>{item.day}</span>
-                      </div>
-                      <div>
-                        <span className={cn(
-                          "text-base font-semibold",
-                          item.status === 'current' ? 'text-cyan-200' : 'text-white'
-                        )}>{item.task}</span>
-                        <p className={cn(
-                          "text-xs",
-                          item.status === 'current' ? 'text-cyan-300' : 'text-gray-400'
-                        )}>{item.description}</p>
-                      </div>
-                    </div>
-                    <div className={cn('w-4 h-4 rounded-full shadow-lg', 
-                      item.status === 'completed' ? 'bg-green-400' : 
-                      item.status === 'current' ? 'bg-cyan-400 animate-pulse' :
-                      'bg-gray-500'
-                    )} />
-                  </div>
-                ))}
-                <div className="mt-6 p-4 bg-cyan-500/10 rounded-xl border border-cyan-400/30">
-                  <p className="text-sm text-cyan-300 font-semibold mb-2">
-                    Total time: ~2 hours/week • Today is {new Date().toLocaleDateString('en-US', { weekday: 'long' })}
-                  </p>
-                  <p className="text-xs text-cyan-200">
-                    {new Date().getDay() === 0 || new Date().getDay() === 6 
-                      ? "Weekend - No tasks scheduled. Enjoy your break!" 
-                      : "Focus on micro-caps with volume • Sweet spot: 60-80th percentile engagement"}
-                  </p>
-                </div>
-              </div>
+              <WorkflowPanel />
             </div>
 
             {/* Risk Controls */}
