@@ -489,7 +489,29 @@ export class CryptoDataService {
       const url = `${GITHUB_BASE_URL}/repos/${owner}/${repo}/stats/commit_activity`;
       
       const response = await this.fetchWithRateLimit(url, githubLimiter);
-      const data = await response.json();
+      
+      // Check for 204 No Content or empty response
+      if (response.status === 204) {
+        dataCache.set(cacheKey, [], 60 * 60 * 1000); // 1 hour TTL
+        return [];
+      }
+      
+      // Read response as text first to check if it's empty
+      const responseText = await response.text();
+      if (!responseText || responseText.trim() === '') {
+        dataCache.set(cacheKey, [], 60 * 60 * 1000); // 1 hour TTL
+        return [];
+      }
+      
+      // Try to parse JSON with error handling
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (jsonError) {
+        console.warn('Failed to parse GitHub commit activity JSON:', jsonError);
+        dataCache.set(cacheKey, [], 60 * 60 * 1000); // 1 hour TTL
+        return [];
+      }
       
       // Cache successful response
       dataCache.set(cacheKey, data || [], 60 * 60 * 1000); // 1 hour TTL
