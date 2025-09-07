@@ -1,4 +1,5 @@
 import React from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { 
   TrendingUp, 
   Code, 
@@ -18,6 +19,32 @@ import {
 import { AnalysisResult } from '../types';
 import { formatNumber, formatPercentage, getScoreColor, getScoreBadgeColor, getRiskColor, getRecommendationColor, cn } from '../utils';
 
+// Generate mock price history for charts
+const generatePriceHistory = (token: any, days: number = 30) => {
+  const data = [];
+  let price = token.price * 0.8; // Start 20% lower
+  const volatility = 0.05; // 5% daily volatility
+  
+  for (let i = 0; i < days; i++) {
+    const change = (Math.random() - 0.5) * 2 * volatility;
+    price = price * (1 + change);
+    
+    data.push({
+      date: new Date(Date.now() - (days - i) * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      price: price,
+      volume: Math.random() * token.volume24h * 2 + token.volume24h * 0.5,
+      high: price * (1 + Math.random() * 0.05),
+      low: price * (1 - Math.random() * 0.05)
+    });
+  }
+  
+  // Ensure last price matches current price
+  data[data.length - 1].price = token.price;
+  data[data.length - 1].volume = token.volume24h;
+  
+  return data;
+};
+
 interface AnalysisPanelProps {
   analysis: AnalysisResult;
 }
@@ -25,34 +52,54 @@ interface AnalysisPanelProps {
 export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
   const { token, narrative, developerMetrics, tokenomics, smartMoney, sentiment, listing, technical, overallScore, riskLevel, recommendation, breakoutProbability, breakoutSignals } = analysis;
 
+  const priceHistory = generatePriceHistory(token, 30);
   const ScoreIcon = overallScore >= 70 ? CheckCircle : overallScore >= 40 ? AlertTriangle : XCircle;
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-black/90 backdrop-blur-sm p-4 rounded-xl shadow-xl border border-cyan-400/30">
+          <p className="text-sm text-cyan-300 mb-1">{label}</p>
+          <p className="font-bold text-lg text-white">
+            ${payload[0].value.toFixed(4)}
+          </p>
+          {payload[1] && (
+            <p className="text-sm text-gray-300">
+              Volume: {formatNumber(payload[1].value)}
+            </p>
+          )}
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="card">
+      <div className="glass-card p-8">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center text-white font-bold">
+            <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center text-white font-bold shadow-lg">
               {token.symbol.slice(0, 2)}
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">{token.name}</h2>
-              <p className="text-gray-600">{token.symbol} • ${token.price.toFixed(2)}</p>
+              <h2 className="text-3xl font-bold text-white">{token.name}</h2>
+              <p className="text-gray-300 text-lg">{token.symbol} • ${token.price.toFixed(4)}</p>
             </div>
           </div>
           <div className="text-right">
             <div className="flex items-center space-x-2 mb-2">
               <ScoreIcon className={cn('w-6 h-6', getScoreColor(overallScore))} />
-              <span className={cn('text-2xl font-bold', getScoreColor(overallScore))}>
+              <span className={cn('text-3xl font-bold text-white')}>
                 {overallScore}/100
               </span>
             </div>
             <div className="flex space-x-2">
-              <span className={cn('badge', getScoreBadgeColor(overallScore))}>
+              <span className="badge-success">
                 {riskLevel.toUpperCase()} RISK
               </span>
-              <span className={cn('badge', getRecommendationColor(recommendation).replace('text-', 'bg-').replace('-600', '-100').replace('-700', '-100') + ' ' + getRecommendationColor(recommendation))}>
+              <span className="badge-primary">
                 {recommendation.replace('_', ' ').toUpperCase()}
               </span>
               <span className={cn('badge', 
@@ -68,36 +115,94 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
         </div>
       </div>
 
+      {/* Price Chart */}
+      <div className="glass-card p-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-2xl font-bold text-white mb-2">Price Chart</h3>
+            <p className="text-gray-300">30-day price movement with volume</p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="text-right">
+              <p className="text-sm text-gray-400">Current Price</p>
+              <p className="text-2xl font-bold text-white">${token.price.toFixed(4)}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-gray-400">24h Change</p>
+              <p className={cn('text-xl font-bold', 
+                token.priceChange24h >= 0 ? 'text-green-400' : 'text-red-400'
+              )}>
+                {formatPercentage(token.priceChange24h)}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="h-[400px] bg-black/20 rounded-2xl p-6 border border-white/10">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={priceHistory}>
+              <defs>
+                <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.4}/>
+                  <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+              <XAxis 
+                dataKey="date" 
+                stroke="#9ca3af"
+                fontSize={12}
+                tick={{ fill: '#9ca3af' }}
+              />
+              <YAxis 
+                stroke="#9ca3af"
+                fontSize={12}
+                tick={{ fill: '#9ca3af' }}
+                tickFormatter={(value) => `$${value.toFixed(3)}`}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Area
+                type="monotone"
+                dataKey="price"
+                stroke="#06b6d4"
+                strokeWidth={3}
+                fill="url(#priceGradient)"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
       {/* Narrative Analysis */}
       {narrative && (
-        <div className="card">
-          <div className="card-header">
+        <div className="glass-card p-8">
+          <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-2">
-              <TrendingUp className="w-5 h-5 text-primary-600" />
-              <h3 className="text-lg font-semibold">Narrative Analysis</h3>
+              <TrendingUp className="w-6 h-6 text-orange-400" />
+              <h3 className="text-xl font-bold text-white">Narrative Analysis</h3>
             </div>
-            {narrative.trending && <span className="badge badge-success">TRENDING</span>}
+            {narrative.trending && <span className="badge-success">🔥 TRENDING</span>}
           </div>
           <div className="space-y-3">
             <div>
-              <h4 className="font-medium text-gray-900">{narrative.name}</h4>
-              <p className="text-gray-600 text-sm mt-1">{narrative.description}</p>
+              <h4 className="font-bold text-white text-lg">{narrative.name}</h4>
+              <p className="text-gray-300 mt-2">{narrative.description}</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="metric-card">
-                <p className="text-xs text-gray-600 mb-1">30d Performance</p>
-                <p className="font-semibold text-success-600">+{narrative.performance30d.toFixed(1)}%</p>
+              <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                <p className="text-sm text-gray-400 mb-1">30d Performance</p>
+                <p className="font-bold text-green-400 text-xl">+{narrative.performance30d.toFixed(1)}%</p>
               </div>
-              <div className="metric-card">
-                <p className="text-xs text-gray-600 mb-1">Market Cap</p>
-                <p className="font-semibold">{formatNumber(narrative.marketCap)}</p>
+              <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                <p className="text-sm text-gray-400 mb-1">Market Cap</p>
+                <p className="font-bold text-white text-xl">{formatNumber(narrative.marketCap)}</p>
               </div>
             </div>
             <div>
-              <p className="text-xs text-gray-600 mb-2">Key Catalysts</p>
+              <p className="text-sm text-gray-400 mb-3 font-semibold">Key Catalysts</p>
               <div className="flex flex-wrap gap-2">
                 {narrative.catalysts.map((catalyst, index) => (
-                  <span key={index} className="badge badge-primary text-xs">
+                  <span key={index} className="badge-primary">
                     {catalyst}
                   </span>
                 ))}
@@ -109,11 +214,11 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
 
       {/* Developer Metrics */}
       {developerMetrics && (
-        <div className="card">
-          <div className="card-header">
+        <div className="glass-card p-8">
+          <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-2">
-              <Code className="w-5 h-5 text-primary-600" />
-              <h3 className="text-lg font-semibold">Developer Traction</h3>
+              <Code className="w-6 h-6 text-green-400" />
+              <h3 className="text-xl font-bold text-white">Developer Traction</h3>
             </div>
             <span className={cn('badge', 
               developerMetrics.fullTimeDevs >= 10 && developerMetrics.commitGrowth6m > 25 
@@ -124,31 +229,31 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
             </span>
           </div>
           <div className="grid grid-cols-3 gap-4">
-            <div className="metric-card">
-              <p className="text-xs text-gray-600 mb-1">Full-time Devs</p>
-              <p className="font-semibold text-lg">{developerMetrics.fullTimeDevs}</p>
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+              <p className="text-sm text-gray-400 mb-1">Full-time Devs</p>
+              <p className="font-bold text-white text-2xl">{developerMetrics.fullTimeDevs}</p>
             </div>
-            <div className="metric-card">
-              <p className="text-xs text-gray-600 mb-1">Monthly Active</p>
-              <p className="font-semibold text-lg">{developerMetrics.monthlyActiveDevs}</p>
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+              <p className="text-sm text-gray-400 mb-1">Monthly Active</p>
+              <p className="font-bold text-white text-2xl">{developerMetrics.monthlyActiveDevs}</p>
             </div>
-            <div className="metric-card">
-              <p className="text-xs text-gray-600 mb-1">6m Growth</p>
-              <p className={cn('font-semibold text-lg', 
-                developerMetrics.commitGrowth6m > 25 ? 'text-success-600' : 'text-warning-600'
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+              <p className="text-sm text-gray-400 mb-1">6m Growth</p>
+              <p className={cn('font-bold text-2xl', 
+                developerMetrics.commitGrowth6m > 25 ? 'text-green-400' : 'text-yellow-400'
               )}>
                 +{developerMetrics.commitGrowth6m.toFixed(1)}%
               </p>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">GitHub Stars:</span>
-              <span className="font-medium">{developerMetrics.githubStars.toLocaleString()}</span>
+          <div className="mt-6 pt-6 border-t border-white/10">
+            <div className="flex justify-between">
+              <span className="text-gray-400">GitHub Stars:</span>
+              <span className="font-bold text-white">{developerMetrics.githubStars.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between text-sm mt-1">
-              <span className="text-gray-600">Last Commit:</span>
-              <span className="font-medium">{new Date(developerMetrics.lastCommit).toLocaleDateString()}</span>
+            <div className="flex justify-between mt-2">
+              <span className="text-gray-400">Last Commit:</span>
+              <span className="font-bold text-white">{new Date(developerMetrics.lastCommit).toLocaleDateString()}</span>
             </div>
           </div>
         </div>
